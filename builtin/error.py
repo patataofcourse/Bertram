@@ -3,6 +3,7 @@ from discord.ext import commands
 import traceback
 
 from constants import *
+import private
 
 def setup(_bot):
     _bot.on_command_error = bot_error
@@ -29,7 +30,7 @@ async def bot_error(ctx, error):
             errfile.close()
             try:
                 await ctx.bot.get_channel(BOT_ERROR_CHANNEL).send(str(hex(ctx.message.id)) + "```" +
-                    "".join(traceback.format_exception(type(error.original), error.original, error.original.__traceback__)) + "```")
+                    "".join(traceback.format_exception(type(error.original), error.original, error.original.__traceback__)).replace(private.name, "patataofcourse") + "```")
             except Exception as e:
                 errfile = open("error/"+hex(ctx.message.id), "rw")
                 errfile.write("".join(traceback.format_exception(type(e), e, e.__traceback__)))
