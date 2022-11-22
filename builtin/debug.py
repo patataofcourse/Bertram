@@ -17,4 +17,4 @@ async def debug(ctx):
     await ctx.send("Debug menu sent!")
     embed = discord.Embed(title=f"{BOT_NAME} debug", color=BOT_COLOR)
     embed.add_field(name="Module errors", value=module_errors)
-    await ctx.bot.get_channel().send(embed=embed)
+    await ctx.bot.get_channel(BOT_ERROR_CHANNEL).send(embed=embed)

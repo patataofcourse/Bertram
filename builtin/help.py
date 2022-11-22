@@ -53,7 +53,7 @@ async def hlp(ctx, *args):
         is_helper = is_owner or ctx.author.id in BOT_HELPERS
 
         # Display the actual menu / embed!
-        embed = discord.Embed(title={BOT_HELP_TITLE}, description=f"Use {ctx.bot.command_prefix}help <command> for more info on the command", color=0xfca044)
+        embed = discord.Embed(title={BOT_HELP_TITLE}, description=f"Use {ctx.bot.command_prefix}help <command> for more info on the command", color=BOT_COLOR)
         embed.add_field(name="Standard commands:", value = standard if len(standard) != 0 else "None", inline = False)
         if is_helper and helper != "":
             embed.add_field(name="Helper commands:", value = helper, inline = False)
@@ -86,7 +86,7 @@ async def hlp(ctx, *args):
                 if command.aliases == None:
                     command.aliases = []
                 
-                embed = discord.Embed(title=f"{ctx.bot.command_prefix}{command.qualified_name}", description=command.description, color=0xfca044)
+                embed = discord.Embed(title=f"{ctx.bot.command_prefix}{command.qualified_name}", description=command.description, color=BOT_COLOR)
                 embed.add_field(name="Usage:", value=f"**{ctx.bot.command_prefix}{command.qualified_name} ** {command.usage}\n\n{command.help}", inline=False)
                 if len(command.aliases) != 0:
                     embed.add_field(name="Aliases:", value=ctx.bot.command_prefix+('\n'+ctx.bot.command_prefix).join(command.aliases), inline=False)
