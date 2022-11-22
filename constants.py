@@ -4,11 +4,11 @@ import private
 BOT_NAME = "Bertram"
 BOT_VERSION = "v0.1"
 BOT_PREFIX = "!"
-BOT_ACTIVITY = ""
+BOT_ACTIVITY = "Rhythm Heaven Megamix tm for the Nintendo 3DS tm"
 BOT_OWNERS = (private.priv_acc, 329357113480708106)
 BOT_HELPERS = (231520589511262209)
 BOT_ERROR_CHANNEL = private.the_funky
-BOT_COLOR = 0xffffff
+BOT_COLOR = 0xBBF89B
 
 # customize your text!
 BOT_KILL_MESSAGE = "*poofs into smoke*"
