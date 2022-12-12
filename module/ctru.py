@@ -18,7 +18,7 @@ async def ctru_err(ctx, arg):
     
     description = err & 0x3FF
     module = (err >> 10) & 0xFF
-    #unk = (err >> 18) & 0x7
+    #unk = (err >> 18) & 0x7 # always 0?
     summary = (err >> 21) & 0x3F
     level = err >> 27
 
