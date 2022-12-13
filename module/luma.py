@@ -102,17 +102,25 @@ class Analysis:
         self.oob_pc = False
         self.function_pos = 0
         self.function = None
+        self.call_stack = []
     def render(self, dump):
         embed = discord.Embed(
             title = "Crash dump analysis",
             description = "@ {0:08x} -> {1:08x}".format(dump.pc, dump.lr),
-            color=BOT_COLOR
+            color=BOT_COLOR,
         )
         embed.add_field(
             name = "Symbol information",
             value = ("Located at {0} ({1:08x})".format(self.function, self.function_pos) if self.function != None else "") + \
-                    ("- PC out of bounds\n" if self.oob_pc else "")
+                    ("- PC out of bounds\n" if self.oob_pc else ""),
+            inline = False,
         )
+        if self.call_stack != []:
+            embed.add_field(
+                name = "CTGP-7-style call stack",
+                value = "\n".join(["- {0:08x} ({1})".format(i[0], i[1]) for i in self.call_stack]),
+                inline = False,
+            )
         return embed
 
 @commands.group(
@@ -181,9 +189,9 @@ async def luma(ctx, link = None):
 
 @luma.command(
     name = "stack",
-    usage = "<crash dump as link or attachment> [lines]",
+    usage = "<crash dump as link or attachment> [lines to display]",
     description = "Returns a debug-optimized stack dump for the given Luma crash dump",
-    help = "`lines` defaults to 16"
+    help = "Defaults to 16 lines"
 )
 async def stack(ctx, link = None, lines = "16"):
     try:
@@ -243,10 +251,17 @@ async def code(ctx, link = None):
 
 @luma.command(
     name = "analyze",
-    usage =  "<crash dump as link or attachment>",
-    description = "Analyzes the crash dump and gives some information"
+    usage =  "<crash dump as link or attachment> [call stack length]",
+    description = "Analyzes the crash dump and gives some information",
+    help = "Call stack length defaults to 6. Set to 0 to show full call stack"
 )
-async def analyze(ctx, link = None):
+async def analyze(ctx, link = None, cs_len = "6"):
+    try:
+        cs_len = int(link)
+        link = None
+    except:
+        cs_len = int(cs_len)
+
     try:
         f = await fetch_dump(ctx, link)
         dump = LumaDump(f)
@@ -266,8 +281,7 @@ async def analyze(ctx, link = None):
     if dump.exc_type == 2 or dump.pc >= code_end or dump.pc < code:
         attr.oob_pc = True
     else:
-        symbols = csv.reader(open("sym/rhm.us.csv"))
-        next(symbols)
+        symbols = list(csv.reader(open("sym/rhm.us.csv")))[1:]
         last_pos = 0
         last_name = None
         for line in symbols:
@@ -277,6 +291,16 @@ async def analyze(ctx, link = None):
         attr.function_pos = last_pos
         attr.function = last_name
 
-        #todo: call stack
+        i = 0
+        while cs_len == 0 or len(attr.call_stack) < cs_len:
+            if i >= len(dump.stack): break
+            item = int.from_bytes(dump.stack[i:i+4], "little")
+            if item >= code and item < code_end:
+                last_name = None
+                for line in symbols:
+                    if int(line[1],16) > item: break
+                    last_name = line[0]
+                attr.call_stack.append((item, last_name))
+            i += 4
     
     await ctx.send(embed = attr.render(dump))
