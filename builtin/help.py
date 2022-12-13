@@ -71,7 +71,6 @@ async def hlp(ctx, *args):
                 # If it's a command group, find the subcommand
                 if type(command) == commands.Group and len(args) != 1:
                     subc = command.get_command(" ".join(args[1:]))
-                    await ctx.send(subc)
                     if subc != None:
                         command = subc
 

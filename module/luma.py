@@ -42,93 +42,147 @@ def print_ver(ver):
         out += "." + str((ver & 0xFF))
     return out
 
-@commands.command(
-    name = "luma",
-    usage = "<crash dump as link or attachment>",
-    description = "Parses a Luma3DS crash dump"
-)
-async def luma(ctx, link = None):
+class Err(Exception):
+    def __init__(self, err):
+        self.err = err
+    def __str__(self):
+        return self.err
+    def __repr__(self):
+        return f"Err({repr(self.err)})"
+
+async def fetch_dump(ctx, link = None):
     if link == None:
         try:
-            f = requests.get(ctx.message.attachments[0].url).content
-        except IndexError:
-            await ctx.send("Add a link to the dump, or attach it to your message!")
-            return
+            return requests.get(ctx.message.attachments[0].url).content
+        except IndexError or NameError:
+            raise Err("Add a link to the dump, or attach it to your message!")
         except:
-            await ctx.send("Could not get file from link!")
-            return
+            raise Err("Could not get file from link!")
     else:
         try:
-            f = requests.get(link).content
+            return requests.get(link).content
         except:
-            await ctx.send("Could not get file from link!")
+            raise Err("Could not get file from link!")
+
+class LumaDump:
+    def __init__(self, f):
+        if unpack_from("<2I", f) != (0xdeadc0de, 0xdeadcafe):
+            raise Err("Not a Luma3DS crash dump!")
+        
+        self.version, processor, self.exc_type = unpack_from("<3I", f, 8)
+        self.num_regs, code_size, stack_size, extra_size = unpack_from("<4I", f, 24)
+        self.num_regs //= 4
+        self.processor, self.core = processor & 0xffff, processor >> 16
+
+        if self.version < luma_ver(1,0,2):
+            raise Err(f"Unsupported crash dump (version {print_ver(version)}, minimum supported 1.0.2)")
+
+        self.r = list(unpack_from("<{0}I".format(self.num_regs), f, 40)) # registers
+        self.r.extend([None] * max(0, 23 - len(self.r)))
+        self.sp, self.lr, self.pc, self.cpsr = self.r[13:17]
+        self.dfsr, self.ifsr, self.far = self.r[17:20]
+        self.fpexc, self.fpinst, self.fpinst2 = self.r[20:23]
+
+        code_pos = 40 + 4 * self.num_regs
+        self.code = f[code_pos : code_pos + code_size]
+        stack_pos = code_pos + code_size
+        self.stack = f[stack_pos : stack_pos + stack_size]
+        extra_pos = stack_pos + stack_size
+        self.extra = f[extra_pos : extra_pos + extra_size]
+
+@commands.group(
+    name = "luma",
+    usage = "<crash dump as link or attachment> / (stack/code/analyze) ...",
+    description = "Parses a Luma3DS crash dump",
+    invoke_without_command = True
+)
+async def luma(ctx, link = None):
+    if ctx.invoked_subcommand is None:
+        try:
+            f = await fetch_dump(ctx, link)
+            dump = LumaDump(f)
+        except Err as e:
+            await ctx.send(e)
             return
-    
-    if unpack_from("<2I", f) != (0xdeadc0de, 0xdeadcafe):
-        await ctx.send("Not a Luma3DS crash dump!")
-    version, processor, exc_type, _, num_regs, code_size, stack_size, extra_size = unpack_from("<8I", f, 8)
-    num_regs //= 4
-    processor, core = processor & 0xffff, processor >> 16
 
-    if version < luma_ver(1,0,2):
-        await ctx.send(f"Unsupported crash dump (version {print_ver(version)}, minimum supported 1.0.2)")
-    
-    r = list(unpack_from("<{0}I".format(num_regs), f, 40)) # registers
-    r.extend([None] * max(0, 23 - len(r)))
-    sp, lr, pc, cpsr = r[13:17]
-    dfsr, ifsr, far = r[17:20]
-    fpexc, fpinst, fpinst2 = r[20:23]
-    print(r)
-
-    code_pos = 40 + 4 * num_regs
-    code = f[code_pos : code_pos + code_size]
-    stack_pos = code_pos + code_size
-    stack = f[stack_pos : stack_pos + stack_size]
-    extra_pos = stack_pos + stack_size
-    extra = f[extra_pos : extra_pos + extra_size]
-
-    out = "Luma3DS exception:\n```\n"
-    if processor == 9:
-        out += "Processor: arm9\n"
-    else:
-        out += f"Processor: arm11 (core {core})\n"
-    out += "Exception type: "
-    out += exception_types[exc_type]
-
-    if exc_type == 2: # prefetch
-        if cpsr & 0x20 and code_size > 4:
-            instruction = unpack_from("<I", code[-4:])[0]
-            match instruction:
-                case 0xe12fff7e: # cdpvc p15, #0xf, c2, c15, c1, #7
-                    out += " (kernel panic)"
-                case 0xef00003c:
-                    out += svcBreak_reasons[r[0]] if r[0] < 3 else " (svcBreak)"
-    elif processor != 9 and (fpexc & 0x80000000):
-        out += " (VFP exception)"
-
-    out += "\n"
-
-    if processor == 11 and exc_type >= 2: # data/prefetch abort
-        out += "Fault status: "
-        out += fault_sources[ifsr if exc_type == 2 else dfsr] + "\n"
-    
-    if extra_size != 0:
-        if processor == 11:
-                out += "Current process: {0} ({1:016x})".format(extra[:8].decode("ascii"), unpack_from("<Q", extra, 8)[0]) + "\n"
+        out = "**Luma3DS crash**:\n```\n"
+        if dump.processor == 9:
+            out += "Processor: arm9\n"
         else:
-                out += "<Dump contains ARM9 memory>\n"
+            out += f"Processor: arm11 (core {dump.core})\n"
+        out += "Exception type: "
+        out += exception_types[dump.exc_type]
+
+        if dump.exc_type == 2: # prefetch
+            if dump.cpsr & 0x20 and len(dump.code) > 4:
+                instruction = unpack_from("<I", dump.code[-4:])[0]
+                match instruction:
+                    case 0xe12fff7e: # cdpvc p15, #0xf, c2, c15, c1, #7
+                        out += " (kernel panic)"
+                    case 0xef00003c:
+                        out += svcBreak_reasons[dump.r[0]] if dump.r[0] < 3 else " (svcBreak)"
+        elif dump.processor != 9 and (dump.fpexc & 0x80000000):
+            out += " (VFP exception)"
+
+        out += "\n"
+
+        if dump.processor == 11 and dump.exc_type >= 2: # data/prefetch abort
+            out += "Fault status: "
+            out += fault_sources[dump.ifsr if dump.exc_type == 2 else dump.dfsr] + "\n"
+        
+        if len(dump.extra) != 0:
+            if dump.processor == 11:
+                    out += "Current process: {0} ({1:016x})".format(dump.extra[:8].decode("ascii"), unpack_from("<Q", dump.extra, 8)[0]) + "\n"
+            else:
+                    out += "<Dump contains ARM9 memory>\n"
+        
+        # registers
+        out += "\nRegister dump:\n\n"
+        for i in range(0, dump.num_regs - (dump.num_regs % 2), 2):
+            out += "{0:<15}{1:<20}{2:<15}{3:<20}\n".format(
+                reg_names[i], "{0:08x}".format(dump.r[i]),
+                reg_names[i + 1], "{0:08x}".format(dump.r[i + 1])
+            )
+        if dump.num_regs % 2 == 1:
+            out += "{0:<15}{1:<20}\n".format(reg_names[dump.num_regs - 1], "{0:08x}".format(dump.r[dump.num_regs - 1]))
+
+        out += "\n- !luma stack <dump> to get a stack dump\n"
+        if len(dump.code) > 4:
+            out += "- !luma code <dump> to obtain a code dump\n"
+        out += "- !luma analyze <dump> to analyze the crash data\n"
+
+        out += "```"
+        await ctx.send(out)
+
+@luma.command(
+    name = "stack",
+    usage = "<crash dump as link or attachment> [lines]",
+    description = "Returns a debug-optimized stack dump for the given Luma crash dump",
+    help = "`lines` defaults to 16"
+)
+async def stack(ctx, link = None, lines = 16):
+    try:
+        f = await fetch_dump(ctx, link)
+        dump = LumaDump(f)
+    except Err as e:
+        await ctx.send(e)
+        return
     
-    # registers
-    out += "\nRegister dump:\n\n"
-    for i in range(0, num_regs - (num_regs % 2), 2):
-        out += "{0:<15}{1:<20}{2:<15}{3:<20}\n".format(
-            reg_names[i], "{0:08x}".format(r[i]),
-            reg_names[i + 1], "{0:08x}".format(r[i + 1])
-        )
-        
-        
-    if num_regs % 2 == 1:
-        out += "{0:<15}{1:<20}\n".format(reg_names[num_regs - 1], "{0:08x}".format(r[num_regs - 1]))
+    out = "```\nStack dump (sp = {0:08x}):\n".format(dump.sp)
+    out += "(Endianness applied)\n\n"
+    
+    for i in range(0, min(len(dump.stack), lines*16), 16):
+        if len(dump.stack) - i > 16:
+            d = dump.stack[i:i+16]
+        else:
+            d = dump.stack[i:]
+        for i in range(0, len(d), 4):
+            out += "{0:08x} ".format(int.from_bytes(d[i:i+4], "little"))
+        out = out.rstrip()
+        out += "\n"
 
     out += "```"
-    await ctx.send(out)
+    if len(out) <= 4000:
+        await ctx.send(out)
+    else:
+        await ctx.send("Too big! Choose a smaller number of lines")
