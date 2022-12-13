@@ -1,4 +1,11 @@
+import discord
 from discord.ext import commands
+
+from constants import *
+
+import capstone
+from capstone import CS_ARCH_ARM, CS_MODE_ARM
+import csv
 import requests
 from struct import unpack_from
 
@@ -90,6 +97,24 @@ class LumaDump:
         extra_pos = stack_pos + stack_size
         self.extra = f[extra_pos : extra_pos + extra_size]
 
+class Analysis:
+    def __init__(self):
+        self.oob_pc = False
+        self.function_pos = 0
+        self.function = None
+    def render(self, dump):
+        embed = discord.Embed(
+            title = "Crash dump analysis",
+            description = "@ {0:08x} -> {1:08x}".format(dump.pc, dump.lr),
+            color=BOT_COLOR
+        )
+        embed.add_field(
+            name = "Symbol information",
+            value = ("Located at {0} ({1:08x})".format(self.function, self.function_pos) if self.function != None else "") + \
+                    ("- PC out of bounds\n" if self.oob_pc else "")
+        )
+        return embed
+
 @commands.group(
     name = "luma",
     usage = "<crash dump as link or attachment> / (stack/code/analyze) ...",
@@ -158,9 +183,15 @@ async def luma(ctx, link = None):
     name = "stack",
     usage = "<crash dump as link or attachment> [lines]",
     description = "Returns a debug-optimized stack dump for the given Luma crash dump",
-    help = "`lines` defaults to 16, and requires the file to be given as a link (for now)"
+    help = "`lines` defaults to 16"
 )
-async def stack(ctx, link = None, lines = 16):
+async def stack(ctx, link = None, lines = "16"):
+    try:
+        lines = int(link)
+        link = None
+    except:
+        lines = int(lines)
+    
     try:
         f = await fetch_dump(ctx, link)
         dump = LumaDump(f)
@@ -202,12 +233,50 @@ async def code(ctx, link = None):
         return
 
     # REMINDER: it's offset by 0x34 for some stupid reason
-
-    from capstone import CS_ARCH_ARM, CS_MODE_ARM, Cs
     
     out = "Code dump (pc = {0:08x}, far = {1:08x})\n\n".format(dump.pc, dump.far)
-    mode = Cs(CS_ARCH_ARM, CS_MODE_ARM)
+    mode = capstone.Cs(CS_ARCH_ARM, CS_MODE_ARM)
     for i in mode.disasm(dump.code, dump.pc - len(dump.code) + 0x34):
         out += "0x%x:\t%s\t%s\n" %(i.address, i.mnemonic, i.op_str)
 
     await ctx.send("```" + out + "```")
+
+@luma.command(
+    name = "analyze",
+    usage =  "<crash dump as link or attachment>",
+    description = "Analyzes the crash dump and gives some information"
+)
+async def analyze(ctx, link = None):
+    try:
+        f = await fetch_dump(ctx, link)
+        dump = LumaDump(f)
+    except Err as e:
+        await ctx.send(e)
+        return
+    
+    attr = Analysis()
+
+    bounds = csv.reader(open("sym/bounds.csv"))
+    next(bounds)
+    for line in bounds:
+        if line[0] != "US": continue
+        code = int(line[1], 16)
+        code_end = int(line[2], 16)
+    
+    if dump.exc_type == 2 or dump.pc >= code_end or dump.pc < code:
+        attr.oob_pc = True
+    else:
+        symbols = csv.reader(open("sym/rhm.us.csv"))
+        next(symbols)
+        last_pos = 0
+        last_name = None
+        for line in symbols:
+            if int(line[1],16) > dump.pc: break
+            last_name = line[0]
+            last_pos = int(line[1], 16)
+        attr.function_pos = last_pos
+        attr.function = last_name
+
+        #todo: call stack
+    
+    await ctx.send(embed = attr.render(dump))

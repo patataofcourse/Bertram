@@ -7,3 +7,5 @@ error/*
 
 private.py
 tokens.py
+
+sym/rhm.*.csv
