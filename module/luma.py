@@ -158,7 +158,7 @@ async def luma(ctx, link = None):
     name = "stack",
     usage = "<crash dump as link or attachment> [lines]",
     description = "Returns a debug-optimized stack dump for the given Luma crash dump",
-    help = "`lines` defaults to 16"
+    help = "`lines` defaults to 16, and requires the file to be given as a link (for now)"
 )
 async def stack(ctx, link = None, lines = 16):
     try:
@@ -170,7 +170,7 @@ async def stack(ctx, link = None, lines = 16):
     
     out = "```\nStack dump (sp = {0:08x}):\n".format(dump.sp)
     out += "(Endianness applied)\n\n"
-    
+
     for i in range(0, min(len(dump.stack), lines*16), 16):
         if len(dump.stack) - i > 16:
             d = dump.stack[i:i+16]
@@ -186,3 +186,28 @@ async def stack(ctx, link = None, lines = 16):
         await ctx.send(out)
     else:
         await ctx.send("Too big! Choose a smaller number of lines")
+
+
+@luma.command(
+    name = "code",
+    usage = "<crash dump as link or attachment>",
+    description = "Returns a code dump for the given Luma crash dump"
+)
+async def code(ctx, link = None):
+    try:
+        f = await fetch_dump(ctx, link)
+        dump = LumaDump(f)
+    except Err as e:
+        await ctx.send(e)
+        return
+
+    # REMINDER: it's offset by 0x34 for some stupid reason
+
+    from capstone import CS_ARCH_ARM, CS_MODE_ARM, Cs
+    
+    out = "Code dump (pc = {0:08x}, far = {1:08x})\n\n".format(dump.pc, dump.far)
+    mode = Cs(CS_ARCH_ARM, CS_MODE_ARM)
+    for i in mode.disasm(dump.code, dump.pc - len(dump.code) + 0x34):
+        out += "0x%x:\t%s\t%s\n" %(i.address, i.mnemonic, i.op_str)
+
+    await ctx.send("```" + out + "```")
