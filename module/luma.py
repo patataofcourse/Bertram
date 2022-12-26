@@ -106,7 +106,7 @@ class Analysis:
     def render(self, dump):
         embed = discord.Embed(
             title = "Crash dump analysis",
-            description = "@ {0:08x} -> {1:08x}".format(dump.pc, dump.lr),
+            description = "@ {0:08x} -> {1:08x} (@ PC -> LR)".format(dump.pc, dump.lr),
             color=BOT_COLOR,
         )
         embed.add_field(
@@ -125,7 +125,7 @@ class Analysis:
 
 @commands.group(
     name = "luma",
-    usage = "<crash dump as link or attachment> / (stack/code/analyze) ...",
+    usage = "<crash dump as link or attachment> / (stack/code/analyze/solve) ...",
     description = "Parses a Luma3DS crash dump",
     invoke_without_command = True
 )
@@ -304,3 +304,31 @@ async def analyze(ctx, link = None, cs_len = "6"):
             i += 4
     
     await ctx.send(embed = attr.render(dump))
+
+@luma.command(
+    name = "solve",
+    usage = "<crash dump as link or attachment>",
+    description = "Gives you some help on what the issue with your dump may be"
+)
+async def solve(ctx, link = None):
+    try:
+        f = await fetch_dump(ctx, link)
+        dump = LumaDump(f)
+    except Err as e:
+        await ctx.send(e)
+        return
+    
+    embed = discord.Embed(
+        title = "Megamix Crash Solver tm",
+        description = "(disclaimer, results may be slightly off)",
+        color = BOT_COLOR
+    )
+
+    if dump.pc == 0x0011e764 and dump.exc_type == 3:
+        embed.add_field (
+            name = "Did `call` or `async_call` with a sub number",
+            value = "- __100%__ chance\nSeems like you should get this fixed, and quick!",
+            inline = False
+        )
+
+    await ctx.send(embed = embed)
