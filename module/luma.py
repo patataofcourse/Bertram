@@ -161,7 +161,7 @@ async def luma(ctx, link = None):
 
         if dump.processor == 11 and dump.exc_type >= 2: # data/prefetch abort
             out += "Fault status: "
-            out += fault_sources[dump.ifsr if dump.exc_type == 2 else dump.dfsr] + "\n"
+            out += fault_sources[(dump.ifsr if dump.exc_type == 2 else dump.dfsr) & 0xF] + "\n"
         
         if len(dump.extra) != 0:
             if dump.processor == 11:
