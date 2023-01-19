@@ -330,5 +330,12 @@ async def solve(ctx, link = None):
             value = "- __100%__ chance\nSeems like you should get this fixed, and quick!",
             inline = False
         )
+    
+    if dump.pc == 0x001392c4 and dump.exc_type == 2:
+        embed.add_field (
+            name = "Ran out of effect file memory (using Karate Man's effect file)",
+            value = "- __~80%__ chance\nUse Bunny Hop's effect file instead!",
+            inline = False
+        )
 
     await ctx.send(embed = embed)
