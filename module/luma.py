@@ -97,6 +97,30 @@ class LumaDump:
         extra_pos = stack_pos + stack_size
         self.extra = f[extra_pos : extra_pos + extra_size]
 
+async def call_stack_offsets(bounds, symbols, dump, size = 0):
+    cs = await call_stack(bounds, symbols, dump, size)
+    out = []
+    for item in cs:
+        out.append(item[1])
+    return out
+
+async def call_stack(bounds, symbols, dump, size = 0):
+    i = 0
+    call_stack = []
+    while size == 0 or len(call_stack) < size:
+        if i >= len(dump.stack): break
+        item = int.from_bytes(dump.stack[i:i+4], "little")
+        if item >= bounds[0] and item < bounds[1]:
+            last_name = None
+            last_pos = 0
+            for line in symbols:
+                if int(line[1],16) > item: break
+                last_pos = int(line[1], 16)
+                last_name = (line[2] + "::" if len(line) > 2 and line[2] != "Global" else "") + line[0]
+            call_stack.append((item, last_pos, last_name))
+        i += 4
+    return call_stack
+
 class Analysis:
     def __init__(self):
         self.oob_pc = False
@@ -118,7 +142,7 @@ class Analysis:
         if self.call_stack != []:
             embed.add_field(
                 name = "CTGP-7-style call stack",
-                value = "\n".join(["- {0:08x} ({1})".format(i[0], i[1]) for i in self.call_stack]),
+                value = "\n".join(["- {0:08x} (`{1}`)".format(i[0], i[2]) for i in self.call_stack]),
                 inline = False,
             )
         return embed
@@ -291,17 +315,7 @@ async def analyze(ctx, link = None, cs_len = "6"):
         attr.function_pos = last_pos
         attr.function = last_name
 
-        i = 0
-        while cs_len == 0 or len(attr.call_stack) < cs_len:
-            if i >= len(dump.stack): break
-            item = int.from_bytes(dump.stack[i:i+4], "little")
-            if item >= code and item < code_end:
-                last_name = None
-                for line in symbols:
-                    if int(line[1],16) > item: break
-                    last_name = (line[2] + "::" if len(line) > 2 and line[2] != "Global" else "") + line[0]
-                attr.call_stack.append((item, last_name))
-            i += 4
+        attr.call_stack = await call_stack((code, code_end), symbols, dump, cs_len)
     
     await ctx.send(embed = attr.render(dump))
 
@@ -318,6 +332,16 @@ async def solve(ctx, link = None):
         await ctx.send(e)
         return
     
+    bounds = csv.reader(open("sym/bounds.csv"))
+    next(bounds)
+    for line in bounds:
+        if line[0] != "US": continue
+        code = int(line[1], 16)
+        code_end = int(line[2], 16)
+    symbols = list(csv.reader(open("sym/rhm.us.csv")))[1:]
+    
+    cs_offsets = await call_stack_offsets((code, code_end), symbols, dump)
+
     embed = discord.Embed(
         title = "Megamix Crash Solver tm",
         description = "(disclaimer, results may be slightly off)",
@@ -326,8 +350,8 @@ async def solve(ctx, link = None):
 
     if dump.pc == 0x0011e764 and dump.exc_type == 3:
         embed.add_field (
-            name = "Did `call` or `async_call` with a sub number",
-            value = "__100%__ chance\nSeems like you should get this fixed, and quick!",
+            name = "Tried to run Tickflow at invalid address",
+            value = "__100%__ chance\nThings that might cause this:\n - `call`ing a sub by number\n - `sub`ing a sub by label\n - `return`ing on an async thread",
             inline = False
         )
     
@@ -335,6 +359,13 @@ async def solve(ctx, link = None):
         embed.add_field (
             name = "Ran out of effect file memory (using Karate Man's effect file)",
             value = "__~80%__ chance\nUse Bunny Hop's effect file instead!",
+            inline = False
+        )
+
+    if (0x002471dc in cs_offsets) and dump.exc_type == 3:
+        embed.add_field (
+            name = "Error in the scene loading process",
+            value = f"__~70%__ chance\nMight be one of the following:\n - No cellanim/effect/layout loaded",
             inline = False
         )
     
