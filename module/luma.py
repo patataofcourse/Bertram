@@ -362,12 +362,19 @@ async def solve(ctx, link = None):
             inline = False
         )
 
-    if (0x002471dc in cs_offsets) and dump.exc_type == 3:
+    if 0x002471dc in cs_offsets:
         embed.add_field (
             name = "Error in the scene loading process",
-            value = f"__~70%__ chance\nMight be one of the following:\n - No cellanim/effect/layout loaded",
+            value = f"__~70%__ chance\nMight be one of the following:\n - No cellanim/effect/layout loaded\n - Layout loaded in a slot lesser or equal than 3",
             inline = False
         )
+        if dump.pc == 0x0020b494 and dump.exc_type == 3:
+            embed.add_field (
+                name = "Layout loaded on slot lesser or equal then 3",
+                value = f"__~80%__ chance\nAll `set_layout` calls **must not** touch the first three layout slots!",
+                inline = False
+            )
+
     
     if len(embed.fields) == 0:
         embed.add_field (
