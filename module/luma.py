@@ -337,5 +337,12 @@ async def solve(ctx, link = None):
             value = "__~80%__ chance\nUse Bunny Hop's effect file instead!",
             inline = False
         )
+    
+    if len(embed.fields) == 0:
+        embed.add_field (
+            name = "No matches found!",
+            value = "Might need some manual reverse-engineering. If it's common enough it'll get added into Bertram!",
+            inline = False
+        )
 
     await ctx.send(embed = embed)

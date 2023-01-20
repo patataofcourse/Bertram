@@ -53,7 +53,7 @@ async def hlp(ctx, *args):
         is_helper = is_owner or ctx.author.id in BOT_HELPERS
 
         # Display the actual menu / embed!
-        embed = discord.Embed(title={BOT_HELP_TITLE}, description=f"Use {ctx.bot.command_prefix}help <command> for more info on the command", color=BOT_COLOR)
+        embed = discord.Embed(title=BOT_HELP_TITLE, description=f"Use {ctx.bot.command_prefix}help <command> for more info on the command", color=BOT_COLOR)
         embed.add_field(name="Standard commands:", value = standard if len(standard) != 0 else "None", inline = False)
         if is_helper and helper != "":
             embed.add_field(name="Helper commands:", value = helper, inline = False)
