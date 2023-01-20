@@ -286,7 +286,7 @@ async def analyze(ctx, link = None, cs_len = "6"):
         last_name = None
         for line in symbols:
             if int(line[1],16) > dump.pc: break
-            last_name = line[0]
+            last_name = (line[2] + "::" if len(line) > 2 and line[2] != "Global" else "") + line[0]
             last_pos = int(line[1], 16)
         attr.function_pos = last_pos
         attr.function = last_name
@@ -299,7 +299,7 @@ async def analyze(ctx, link = None, cs_len = "6"):
                 last_name = None
                 for line in symbols:
                     if int(line[1],16) > item: break
-                    last_name = line[0]
+                    last_name = (line[2] + "::" if len(line) > 2 and line[2] != "Global" else "") + line[0]
                 attr.call_stack.append((item, last_name))
             i += 4
     
