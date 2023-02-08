@@ -1,0 +1,24 @@
+name = "Coin Toss"
+scene = 0x41
+keywords = ["coin toss", "ntrcointoss", "cointoss"]
+
+sfx = "GROUP_NTR_COIN_TOSS"
+
+[versions]
+endless = "Coin Toss"
+remix = ["remixTED"]
+
+[indexes]
+gate00 = 0x104
+gate01 = 0x105
+gate02 = 0x106
+endless = 0x107
+
+[prologue]
+endless = "ntrCoinToss"
+
+[cellanim]
+endless = "ntrCoinToss_long"
+
+[layout]
+endless = "gate"

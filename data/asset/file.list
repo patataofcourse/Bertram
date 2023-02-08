@@ -1,0 +1,23 @@
+# RHDS games
+ntr/airboard.toml
+ntr/backbeat.toml
+ntr/bluebirds.toml
+ntr/boxshow.toml
+ntr/cameraman.toml
+ntr/chorus.toml
+ntr/frog.toml
+ntr/pingpong.toml
+
+# Fever games
+rvl/assemble.toml
+rvl/badminton.toml
+rvl/batting.toml
+rvl/bird.toml
+rvl/book.toml
+rvl/date.toml
+rvl/fishing.toml
+rvl/flea.toml
+rvl/fork.toml
+
+# Endless games
+ntr/cointoss.toml

@@ -1,0 +1,27 @@
+name = "Glee Club"
+scene = 0x13
+keywords = ["glee club", "ntrchorus"]
+
+sfx = "GROUP_PINPON"
+
+[versions]
+short = "Glee Club"
+long = "Glee Club 2"
+remix = ["remix01", "remix07"]
+
+[indexes]
+short = 0x3
+long = 0x22
+
+[prologue]
+short = "ntrChorus"
+long = "ntrChorus2"
+
+[model]
+short = "ntrChorus_short"
+long = "ntrChorus_long"
+remix04 = "ntrChorus_remix01"
+
+[aac]
+short = ["ntr_chorus_short_final", 0x0100007D]
+long = ["ntr_chorus_32k", 0x0100007E]

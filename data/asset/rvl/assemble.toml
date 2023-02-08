@@ -1,0 +1,20 @@
+name = "Built to Scale"
+scene = 0x1C
+keywords = ["built to scale", "rvlassemble", "bts"]
+
+sfx = "GROUP_OTTOSEI"
+
+[versions]
+long = "Airboarder"
+
+[indexes]
+long = 0x2B
+
+[prologue]
+long = "rvlAssemble"
+
+[cellanim]
+long = "rvlAssemble_v0"
+
+[aac]
+long = ["o_fen_32k_0516", 0x1000003]

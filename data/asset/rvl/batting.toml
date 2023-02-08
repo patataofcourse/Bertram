@@ -1,0 +1,23 @@
+name = "Exhibition Match"
+scene = 0x1E
+keywords = ["exhibition match", "rvlbatting"]
+
+effect = "rvlBatting"
+sfx = "GROUP_BATTING"
+
+[versions]
+long = "Exhibition Match"
+remix = ["remix06"]
+
+[indexes]
+long = 0x2D
+
+[prologue]
+long = "rvlBatting"
+
+[cellanim]
+long = "rvlBatting_long"
+remix06 = "rvlBatting_remix06"
+
+[aac]
+long = ["batting_show_32k", 0x1000006]

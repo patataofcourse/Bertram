@@ -1,0 +1,20 @@
+name = "Catch of the Day"
+scene = 0x22
+keywords = ["catch of the day", "rvlfishing", "cotd"]
+
+sfx = "GROUP_FISHING"
+
+[versions]
+long = "Catch of the Day"
+
+[indexes]
+long = 0x31
+
+[prologue]
+long = "rvlFishing"
+
+[cellanim]
+long = "rvlFishing_v0"
+
+[aac]
+long = ["fishing_32k", 0x100000A]

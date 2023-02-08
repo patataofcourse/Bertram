@@ -1,0 +1,32 @@
+name = "Rhythm Rally"
+scene = 0x17
+keywords = ["rhythm rally", "ntrpingpong", "rr"]
+
+sfx = "GROUP_PINPON"
+
+[versions]
+short = "Rhythm Rally"
+long = "Rhythm Rally 2"
+arrange = "Cosmic Rhythm Rally"
+remix = ["remix04", "remixTED"]
+
+[indexes]
+short = 0x4
+long = 0x26
+arrange = 0x53
+
+[prologue]
+short = "ntrPingpong"
+long = "ntrPingpong2"
+arrange = "ntrPingpong3"
+
+[model]
+short = "ntrPingpong_short"
+long = "ntrPingpong_long"
+arrange = "ntrPingpong_arrange"
+remix04 = "ntrPingpong_remix04"
+
+[aac]
+short = ["RhythmTest3_final", 0x01000099]
+long = ["mizuumi_uwo_22k", 0x0100009A]
+arrange = ["ntr_pinpon_ar", 0x0100009B]

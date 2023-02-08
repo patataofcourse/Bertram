@@ -1,0 +1,22 @@
+name = "Airboarder"
+scene = 0xE
+keywords = ["airboarder", "ntrairboard", "air boarder"]
+
+effect = "ntrAirBoard"
+sfx = "GROUP_NTR_AIR_BOARD"
+
+[versions]
+long = "Airboarder"
+remix = ["remixTED"]
+
+[indexes]
+long = 0x1D
+
+[prologue]
+long = "ntrAirBoard"
+
+[model]
+long = "ntrAirBoard_long"
+
+[aac]
+long = ["ntr_air_board", 0x0100006A]

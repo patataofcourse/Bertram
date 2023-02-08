@@ -1,0 +1,20 @@
+name = "Fork Lifter"
+scene = 0x24
+keywords = ["fork lifter", "rvlfork"]
+
+sfx = "GROUP_KUSI"
+
+[versions]
+long = "Fork Lifter"
+
+[indexes]
+long = 0x33
+
+[prologue]
+long = "rvlFork"
+
+[cellanim]
+long = "rvlFork_v0"
+
+[aac]
+long = ["kusizasi_32k", 0x100000D]

@@ -1,0 +1,21 @@
+name = "Lockstep"
+scene = 0xF
+keywords = ["lockstep", "ntrbackbeat", "lock step"]
+
+sfx = "GROUP_NTR_BACKBEAT"
+
+[versions]
+long = "Lockstep"
+remix = ["remixTED"]
+
+[indexes]
+long = 0x1E
+
+[prologue]
+long = "ntrBackbeat"
+
+[cellanim]
+long = "ntrBackbeat_v0"
+
+[aac]
+long = ["ntr_backbeat_32k", 0x01000072]

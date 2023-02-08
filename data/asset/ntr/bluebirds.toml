@@ -1,0 +1,24 @@
+name = "Blue Birds"
+scene = 0x10
+keywords = ["blue birds", "ntrbluebirds"]
+
+sfx = "GROUP_NTR_BLUE_BIRDS"
+
+[versions]
+long = "Blue Birds"
+remix = ["remixTED"]
+
+[indexes]
+long = 0x1F
+
+[prologue]
+long = "ntrBlueBirds"
+
+[cellanim]
+long = "ntrBlueBirds_v0"
+
+[layout]
+long = "ntrBlueBirds"
+
+[aac]
+long = ["ntr_blue_birds_32k", 0x01000073]

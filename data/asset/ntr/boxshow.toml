@@ -1,0 +1,21 @@
+name = "The Dazzles"
+scene = 0x11
+keywords = ["the dazzles", "dazzles", "ntrboxshow"]
+
+sfx = "GROUP_NTR_BOX_SHOW"
+effect = "ntrBoxShow"
+
+[versions]
+long = "The Dazzles"
+
+[indexes]
+long = 0x20
+
+[prologue]
+long = "ntrBoxShow"
+
+[cellanim]
+long = "ntrBoxShow_v0"
+
+[aac]
+long = ["ntr_box_show_32k", 0x01000074]

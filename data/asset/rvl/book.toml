@@ -1,0 +1,22 @@
+name = "Cheer Readers"
+scene = 0x20
+keywords = ["cheer readers", "rvlbook"]
+
+sfx = "GROUP_BOOKS"
+
+[versions]
+long = "Cheer Readers"
+remix = ["remix07"]
+
+[indexes]
+long = 0x2F
+
+[prologue]
+long = "rvlBook"
+
+[cellanim]
+practice = "rvlBook_tutorial"
+long = "rvlBook_long"
+
+[aac]
+long = ["panel_show_32k_0516", 0x1000008]

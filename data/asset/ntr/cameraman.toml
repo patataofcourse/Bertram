@@ -1,0 +1,22 @@
+name = "Freeze Frame"
+scene = 0x12
+keywords = ["freeze frame", "ntrcameraman"]
+
+sfx = "GROUP_NTR_CAMERA_MAN"
+effect = "ntrCameraMan"
+
+[versions]
+long = "Freeze Frame"
+
+[indexes]
+long = 0x21
+
+[prologue]
+long = "ntrCameraMan"
+
+[cellanim]
+long = "ntrCameraMan_long"
+wario = "ntrCameraMan_wario"
+
+[aac]
+long = ["ntr_camera_man_32k", 0x0100007C]

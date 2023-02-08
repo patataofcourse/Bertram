@@ -1,0 +1,20 @@
+name = "Double Date"
+scene = 0x21
+keywords = ["double date", "rvldate"]
+
+sfx = "GROUP_W_DATE"
+
+[versions]
+long = "Double Date"
+
+[indexes]
+long = 0x30
+
+[prologue]
+long = "rvlDate"
+
+[cellanim]
+long = "rvlDate_v0"
+
+[aac]
+long = ["W_date_32k_short_0516", 0x1000009]

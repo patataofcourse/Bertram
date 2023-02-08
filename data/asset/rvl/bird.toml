@@ -1,0 +1,21 @@
+name = "Flock Step"
+scene = 0x1F
+keywords = ["flock step", "rvlBird", "flockstep"]
+
+sfx = "GROUP_MANY_BIRD"
+
+[versions]
+long = "Flock Step"
+remix = ["remixTED"]
+
+[indexes]
+long = 0x2E
+
+[prologue]
+long = "rvlbird"
+
+[cellanim]
+long = "rvlBird_v0"
+
+[aac]
+long = ["kantoring_32k_0504", 0x1000007]

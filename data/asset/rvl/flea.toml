@@ -1,0 +1,28 @@
+name = "Micro-Row"
+scene = 0x23
+keywords = ["micro-row", "micro row", "microrow", "rvlflea"]
+
+effect = "rvlFlea"
+sfx = "GROUP_MIJINKO"
+
+[versions]
+short = "Micro-Row"
+long = "Micro-Row 2"
+remix = ["remix02", "remixTED"]
+
+[indexes]
+short = 0x8
+long = 0x32
+
+[prologue]
+short = "rvlFlea"
+long = "rvlFlea2"
+
+[cellanim]
+short = "rvlFlea_short"
+long = "rvlFlea_long"
+remix02 = "rvlFlea_remix02"
+
+[aac]
+short = ["rvl_chiisana_ikimono_short_final", 0x0100006A]
+long = ["chiisana_ikimono_normal_0516", 0x0100006A]

@@ -1,0 +1,26 @@
+name = "Frog Hop"
+scene = 0x14
+keywords = ["frog hop", "ntrfrog", "jumping jazz", "jumpin jazz"]
+
+sfx = "GROUP_NTR_FROG"
+
+[versions]
+long = "Frog Hop"
+arrange = "Jumpin' Jazz"
+remix = ["remix05", "remixTED"]
+
+[indexes]
+long = 0x23
+arrange = 0x51
+
+[prologue]
+long = "ntrFrog"
+arrange = "ntrFrog2"
+
+[cellanim]
+long = "ntrFrog_long"
+arrange = "ntrFrog_arrange"
+
+[aac]
+short = ["ntr_frog_32k", 0x0100007F]
+long = ["ntr_frog_ar", 0x01000087]

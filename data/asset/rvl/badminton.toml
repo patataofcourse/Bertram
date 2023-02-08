@@ -1,0 +1,27 @@
+name = "Air Rally"
+scene = 0x1D
+keywords = ["air rally", "rvlbadminton"]
+
+sfx = "GROUP_BADMINTON"
+
+[versions]
+short = "Air Rally"
+long = "Air Rally 2"
+remix = ["remix00", "remixTED"]
+
+[indexes]
+short = 0x7
+long = 0x2C
+
+[prologue]
+short = "rvlBadminton"
+long = "rvlBadminton2"
+
+[cellanim]
+short = "rvlBadminton_short"
+long = "rvlBadminton_long"
+remix00 = "rvlBadminton_remix00"
+
+[aac]
+short = ["rvl_osobancho_short_final", 0x1000004]
+long = ["osobanncyo_32k_0618", 0x1000005]
