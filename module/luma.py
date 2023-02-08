@@ -375,6 +375,12 @@ async def solve(ctx, link = None):
                 inline = False
             )
 
+    if dump.pc >= 0x0039a000:
+        embed.add_field (
+            name = "Running code in a non-executable region",
+            value = f"__100%__ chance\nSomething went really wrong with a code patch!",
+            inline = False
+        )
     
     if len(embed.fields) == 0:
         embed.add_field (
