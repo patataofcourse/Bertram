@@ -9,6 +9,7 @@ def setup(bot):
 @commands.command(
     name = "ctru",
     usage = "<error code>",
+    description = "Explains a 3DS OS / ErrDisp error"
 )
 async def ctru_err(ctx, arg):
     if arg.startswith("0x"):
