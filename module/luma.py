@@ -304,18 +304,18 @@ async def analyze(ctx, link = None, cs_len = "6"):
     
     if dump.exc_type == 2 or dump.pc >= code_end or dump.pc < code:
         attr.oob_pc = True
-    else:
-        symbols = list(csv.reader(open("sym/rhm.us.csv")))[1:]
-        last_pos = 0
-        last_name = None
-        for line in symbols:
-            if int(line[1],16) > dump.pc: break
-            last_name = (line[2] + "::" if len(line) > 2 and line[2] != "Global" else "") + line[0]
-            last_pos = int(line[1], 16)
-        attr.function_pos = last_pos
-        attr.function = last_name
 
-        attr.call_stack = await call_stack((code, code_end), symbols, dump, cs_len)
+    symbols = list(csv.reader(open("sym/rhm.us.csv")))[1:]
+    last_pos = 0
+    last_name = None
+    for line in symbols:
+        if int(line[1],16) > dump.pc: break
+        last_name = (line[2] + "::" if len(line) > 2 and line[2] != "Global" else "") + line[0]
+        last_pos = int(line[1], 16)
+    attr.function_pos = last_pos
+    attr.function = last_name
+
+    attr.call_stack = await call_stack((code, code_end), symbols, dump, cs_len)
     
     await ctx.send(embed = attr.render(dump))
 
