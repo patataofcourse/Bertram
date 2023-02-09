@@ -1,0 +1,28 @@
+name = "Shoot-'em-up"
+scene = 0x19
+keywords = ["shoot-'em-up", "shoot-em-up", "shoot em up", "shoot 'em up", "shmup", "ntrshooting"]
+
+sfx = "GROUP_NTR_SHOOTING"
+effect = "ntrShooting"
+
+[versions]
+short = "Shoot-'em-up"
+long = "Shoot-'em-up 2"
+remix = ["remix02", "remix06"]
+
+[indexes]
+short = 0x6
+long = 0x28
+
+[prologue]
+short = "ntrShooting"
+long = "ntrShooting2"
+
+[cellanim]
+short = "ntrShooting_short"
+long = "ntrShooting_long"
+remix02 = "ntrNinja_remix02"
+
+[aac]
+short = ["ntr_shooting_short_32k", 0x0100009E]
+long = ["ntr_shooting_32k", 0x0100009F]

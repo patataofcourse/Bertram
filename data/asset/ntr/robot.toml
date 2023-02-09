@@ -1,0 +1,34 @@
+name = "Fillbots"
+scene = 0x18
+keywords = ["fillbots", "ntrrobot"]
+
+sfx = "GROUP_NTR_ROBOT"
+effect = "ntrRobot"
+
+[versions]
+short = "Fillbots"
+long = "Fillbots 2"
+remix = ["remix00", "remix06"]
+
+[indexes]
+short = 0x5
+long = 0x27
+
+[prologue]
+short = "ntrRobot"
+long = "ntrRobot2"
+
+[cellanim]
+short = "ntrRobot_short"
+long = "ntrRobot_long"
+wario = "ntrRobot_wario"
+remix00 = "ntrNinja_remix00"
+
+[layout]
+short = "ntrRobot_short"
+long = "ntrRobot_long"
+wario = "ntrRobot_wario"
+
+[aac]
+short = ["ntr_robot_short_32k", 0x0100009C]
+long = ["ntr_robot_32k", 0x0100009D]

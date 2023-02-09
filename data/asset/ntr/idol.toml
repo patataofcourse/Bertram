@@ -1,0 +1,28 @@
+name = "Fan Club"
+scene = 0x15
+keywords = ["fan club", "ntridol"]
+
+effect = "ntrIdol"
+sfx = "GROUP_NTR_IDOL"
+
+[versions]
+long = "Fan Club"
+arrange = "Fan Club 2"
+remix = ["remix03", "remix07", "remixTED"]
+
+[indexes]
+long = 0x24
+arrange = 0x52
+
+[prologue]
+long = "ntrIdol"
+arrange = "ntrIdol2"
+
+[cellanim]
+long = "ntrIdol_long"
+arrange = "ntrIdol_arrange"
+remix03 = "ntrIdol_remix03"
+
+[aac]
+long = ["ntr_idol_final", 0x01000088]
+arrange = ["ntr_idol_ar_final", 0x01000090]

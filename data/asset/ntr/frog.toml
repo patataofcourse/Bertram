@@ -22,5 +22,5 @@ long = "ntrFrog_long"
 arrange = "ntrFrog_arrange"
 
 [aac]
-short = ["ntr_frog_32k", 0x0100007F]
-long = ["ntr_frog_ar", 0x01000087]
+long = ["ntr_frog_32k", 0x0100007F]
+arrange = ["ntr_frog_ar", 0x01000087]

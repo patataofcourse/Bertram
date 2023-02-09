@@ -1,0 +1,25 @@
+name = "Dog Ninja"
+scene = 0x16
+keywords = ["dog ninja", "ntrninja"]
+
+sfx = "GROUP_NTR_NINJA"
+
+[versions]
+long = "Dog Ninja"
+remix = ["remixLED", "remix06"]
+
+[indexes]
+long = 0x25
+
+[prologue]
+long = "ntrNinja"
+
+[cellanim]
+long = "ntrNinja_long"
+remixLED = "ntrNinja_remixLED"
+
+[layout]
+long = "ntrNinja"
+
+[aac]
+long = ["ntr_ninja_32k", 0x01000098]

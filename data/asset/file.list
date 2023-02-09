@@ -6,7 +6,11 @@ ntr/boxshow.toml
 ntr/cameraman.toml
 ntr/chorus.toml
 ntr/frog.toml
+ntr/idol.toml
+ntr/ninja.toml
 ntr/pingpong.toml
+ntr/robot.toml
+ntr/shooting.toml
 
 # Fever games
 rvl/assemble.toml
