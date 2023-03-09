@@ -9,3 +9,6 @@ private.py
 tokens.py
 
 sym/rhm.*.csv
+
+# Added by cargo
+/target

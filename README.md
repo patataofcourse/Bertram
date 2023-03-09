@@ -1,5 +1,5 @@
 # Bertram
-A helper bot for Megamix modding!
+A helper bot for Megamix modding! (currently reworking, see old code in [old/](./old))
 
 Uses [patatbot](https://github.com/patataofcourse/patatbot/)
 
