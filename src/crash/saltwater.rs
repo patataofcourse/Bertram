@@ -1,12 +1,14 @@
 use crate::crash::ExcType;
 
 #[repr(u8)]
+#[derive(Debug, Clone)]
 pub enum SWDType {
     Extended,
     Short,
 }
 
 #[repr(u8)]
+#[derive(Debug, Clone)]
 pub enum Region {
     JP,
     US,
@@ -15,11 +17,13 @@ pub enum Region {
     UNK,
 }
 
+#[derive(Debug, Clone)]
 pub enum SWDVersion {
     Debug { commit_hash: String },
     Release { major: u8, minor: u8, micro: u8 },
 }
 
+#[derive(Debug, Clone)]
 pub struct CrashSWD {
     pub crash_type: SWDType,
     pub region: Region,

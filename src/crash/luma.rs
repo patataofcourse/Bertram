@@ -1,36 +1,9 @@
-/*
-
-   def luma_ver(maj, min, mic):
-       return (maj << 16) + (min << 8) + mic
-
-   def luma_dump(f):
-       if unpack_from("<2I", f) != (0xdeadc0de, 0xdeadcafe):
-           raise Err("Not a Luma3DS crash dump!")
-
-       self.version, processor, self.exc_type = unpack_from("<3I", f, 8)
-       self.num_regs, code_size, stack_size, extra_size = unpack_from("<4I", f, 24)
-       self.num_regs //= 4
-       self.processor, self.core = processor & 0xffff, processor >> 16
-
-       if self.version < luma_ver(1,0,2):
-           raise Err(f"Unsupported crash dump (version {print_ver(version)}, minimum supported 1.0.2)")
-
-       self.r = list(unpack_from("<{0}I".format(self.num_regs), f, 40)) # registers
-       self.r.extend([None] * max(0, 23 - len(self.r)))
-       self.sp, self.lr, self.pc, self.cpsr = self.r[13:17]
-       self.dfsr, self.ifsr, self.far = self.r[17:20]
-       self.fpexc, self.fpinst, self.fpinst2 = self.r[20:23]
-
-       code_pos = 40 + 4 * self.num_regs
-       self.code = f[code_pos : code_pos + code_size]
-       stack_pos = code_pos + code_size
-       self.stack = f[stack_pos : stack_pos + stack_size]
-       extra_pos = stack_pos + stack_size
-       self.extra = f[extra_pos : extra_pos + extra_size]
-*/
-
 use crate::crash::ExcType;
+use anyhow::anyhow;
+use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
+use std::io::{Read, Seek, SeekFrom};
 
+#[derive(Debug, Clone)]
 pub struct LumaVersion {
     pub major: u16,
     pub minor: u8,
@@ -38,7 +11,7 @@ pub struct LumaVersion {
 }
 
 impl LumaVersion {
-    pub const fn from(major: u16, minor: u8, micro: u8) -> Self {
+    pub const fn new(major: u16, minor: u8, micro: u8) -> Self {
         Self {
             major,
             minor,
@@ -46,15 +19,40 @@ impl LumaVersion {
         }
     }
 
-    pub const MINIMUM_VERSION: Self = Self::from(1, 0, 2);
+    pub const MINIMUM_VERSION: Self = Self::new(1, 0, 2);
+}
+
+impl From<u32> for LumaVersion {
+    fn from(value: u32) -> Self {
+        Self {
+            major: (value >> 16) as u16,
+            minor: (value >> 8) as u8,
+            micro: value as u8,
+        }
+    }
 }
 
 #[repr(u16)]
+#[derive(Debug, Clone)]
 pub enum LumaProcessor {
     Arm9 = 9,
     Arm11(u16) = 11,
 }
 
+impl TryFrom<u32> for LumaProcessor {
+    type Error = ();
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        let processor = value as u16;
+        let core = (value >> 16) as u16;
+        match processor {
+            9 => Ok(Self::Arm9),
+            11 => Ok(Self::Arm11(core)),
+            _ => Err(()),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct CrashLuma {
     pub version: LumaVersion,
     pub processor: LumaProcessor,
@@ -63,4 +61,58 @@ pub struct CrashLuma {
     pub code: Vec<u8>,
     pub stack: Vec<u8>,
     pub extra: Vec<u8>,
+}
+/*
+    ### Register order: ###
+    r0    r1    r2    r3    r4    r5     r6      r7
+    r8    r9    r10   r11   r12   sp     lr      pc
+    cpsr  dfsr  ifsr  far   fpexc fpinst fpinst2
+*/
+
+impl CrashLuma {
+    pub fn from_file(f: &mut (impl Read + Seek)) -> anyhow::Result<Self> {
+        let magic_a = u32::read_from(f, LE)?;
+        let magic_b = u32::read_from(f, LE)?;
+        if (magic_a, magic_b) != (0xdeadc0de, 0xdeadcafe) {
+            return Err(anyhow!("Not a Luma3DS crash dump"));
+        }
+
+        let version = LumaVersion::from(u32::read_from(f, LE)?);
+        let Ok(processor) = LumaProcessor::try_from(u32::read_from(f, LE)?) else {
+            return Err(anyhow!("Invalid processor number (should be 9 or 11)"));
+        };
+        let Ok(exception_type) = ExcType::try_from(u32::read_from(f, LE)?) else {
+            return Err(anyhow!("Invalid exception type (should be 0-3)"));
+        };
+
+        f.seek(SeekFrom::Current(4))?;
+
+        let num_registers = u32::read_from(f, LE)? / 4;
+        let code_size = u32::read_from(f, LE)?;
+        let stack_size = u32::read_from(f, LE)?;
+        let extra_size = u32::read_from(f, LE)?;
+
+        let mut registers = vec![];
+        for _ in 0..num_registers {
+            registers.push(u32::read_from(f, LE)?);
+        }
+
+        let mut code = vec![0u8; code_size as usize];
+        let mut stack = vec![0u8; stack_size as usize];
+        let mut extra = vec![0u8; extra_size as usize];
+
+        f.read_exact(&mut code)?;
+        f.read_exact(&mut stack)?;
+        f.read_exact(&mut extra)?;
+
+        Ok(Self {
+            version,
+            processor,
+            exception_type,
+            registers,
+            code,
+            stack,
+            extra,
+        })
+    }
 }

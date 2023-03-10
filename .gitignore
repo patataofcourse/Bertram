@@ -10,5 +10,7 @@ tokens.py
 
 sym/rhm.*.csv
 
+test_files/
+
 # Added by cargo
 /target

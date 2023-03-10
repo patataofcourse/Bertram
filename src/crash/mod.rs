@@ -2,6 +2,7 @@ pub mod analyze;
 pub mod luma;
 pub mod saltwater;
 
+#[derive(Debug, Clone)]
 pub enum ExcType {
     FloatingPoint,
     UndefinedInst,
@@ -9,11 +10,33 @@ pub enum ExcType {
     DataAbort,
 }
 
+impl TryFrom<u32> for ExcType {
+    type Error = ();
+    fn try_from(value: u32) -> Result<Self, ()> {
+        match value {
+            0 => Ok(Self::FloatingPoint),
+            1 => Ok(Self::UndefinedInst),
+            2 => Ok(Self::PrefetchAbort),
+            3 => Ok(Self::DataAbort),
+            _ => Err(()),
+        }
+    }
+}
+
+impl TryFrom<u8> for ExcType {
+    type Error = ();
+    fn try_from(value: u8) -> Result<Self, ()> {
+        Self::try_from(value as u32)
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum ModdingEngine {
     RHMPatch,
     SpiceRack(saltwater::SWDVersion, saltwater::Region),
 }
 
+#[derive(Debug, Clone)]
 pub struct CrashInfo {
     pub engine: ModdingEngine,
 
