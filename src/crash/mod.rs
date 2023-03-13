@@ -53,6 +53,6 @@ pub struct CrashInfo {
     pub fpinst: Option<u32>,
     pub fpinst2: Option<u32>,
 
-    pub stack: Option<u32>,
-    pub call_stack: Option<u32>,
+    pub stack: Option<Vec<u8>>,
+    pub call_stack: Option<Vec<u32>>,
 }

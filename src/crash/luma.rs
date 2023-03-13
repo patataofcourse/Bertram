@@ -1,7 +1,9 @@
-use crate::crash::ExcType;
+use std::io::{Read, Seek, SeekFrom};
+
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
-use std::io::{Read, Seek, SeekFrom};
+
+use crate::crash::{CrashInfo, ExcType};
 
 #[derive(Debug, Clone)]
 pub struct LumaVersion {
@@ -114,5 +116,42 @@ impl CrashLuma {
             stack,
             extra,
         })
+    }
+
+    pub fn as_generic(self, call_stack_size: Option<usize>) -> CrashInfo {
+        let r = self.registers[0..13].try_into().unwrap();
+        CrashInfo {
+            call_stack: match call_stack_size {
+                None | Some(0) => None,
+                Some(c) => Some(self.get_call_stack(c)),
+            },
+            engine: super::ModdingEngine::RHMPatch,
+            r,
+            sp: self.registers[13],
+            lr: self.registers[14],
+            pc: self.registers[15],
+            cpsr: self.registers[16],
+            dfsr: self.registers.get(17).copied(),
+            ifsr: self.registers.get(18).copied(),
+            far: self.registers.get(19).copied(),
+            fpexc: self.registers.get(20).copied(),
+            fpinst: self.registers.get(21).copied(),
+            fpinst2: self.registers.get(22).copied(),
+            stack: Some(self.stack),
+        }
+    }
+
+    pub fn get_call_stack(&self, size: usize) -> Vec<u32> {
+        let mut call_stack = vec![];
+        let mut i = 0;
+        while i < self.stack.len() && call_stack.len() < size  {
+            let val = u32::from_le_bytes(self.stack[i..i+4].try_into().unwrap());
+            // TODO: get start and end of sections
+            if (val >= 0x00100000 && val < 0x04000000) || (val >= 0x07000100 && val < 0x08000000) {
+                call_stack.push(val);
+            }
+            i += 4;
+        }
+        call_stack
     }
 }
