@@ -1,17 +1,44 @@
-use std::fs::File;
+use std::env;
 
-#[allow(unused_imports)]
-use bertram::{crash::luma::CrashLuma, ctru::CtruError};
+use serenity::async_trait;
+use serenity::prelude::*;
+use serenity::model::channel::Message;
+use serenity::framework::standard::macros::{command, group};
+use serenity::framework::standard::{StandardFramework, CommandResult};
 
-fn main() -> anyhow::Result<()> {
-    //println!("{}", CtruError::from_code(0xd8c3fbf3));
-    //println!("{}", CtruError::from_code(0xc8804478));
+#[group]
+#[commands(ping)]
+struct General;
 
-    let mut f = File::open("test_files/crash_dump_00000001.dmp")?;
-    let luma_crash = CrashLuma::from_file(&mut f)?;
-    let generic_luma = luma_crash.clone().as_generic(Some(5));
+struct Handler;
 
-    println!("{:#X?}", generic_luma);
+#[async_trait]
+impl EventHandler for Handler {}
+
+#[tokio::main]
+async fn main() {
+    let framework = StandardFramework::new()
+        .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
+        .group(&GENERAL_GROUP);
+
+    // Login with a bot token from the environment
+    let token = env::var("DISCORD_TOKEN").expect("token");
+    let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
+    let mut client = Client::builder(token, intents)
+        .event_handler(Handler)
+        .framework(framework)
+        .await
+        .expect("Error creating client");
+
+    // start listening for events by starting a single shard
+    if let Err(why) = client.start().await {
+        println!("An error occurred while running the client: {:?}", why);
+    }
+}
+
+#[command]
+async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.reply(ctx, "Pong!").await?;
 
     Ok(())
 }
