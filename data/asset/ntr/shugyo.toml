@@ -1,0 +1,23 @@
+name = "Munchy Monk"
+scene = 0x1B
+keywords = ["munchy monk", "munchy", "ntrshugyo"]
+
+sfx = "GROUP_NTR_SHUGYO"
+
+[versions]
+long = "Munchy Monk"
+remix = ["remixTED"]
+
+[indexes]
+long = 0x2A
+
+[prologue]
+long = "ntrShugyo"
+
+[cellanim]
+long = "ntrShugyo_long"
+wario = "ntrShugyo_wario"
+remixTED = "ntrShugyo_remixTED"
+
+[aac]
+long = ["ntr_shugyo_32k", 0x010000A9]

@@ -11,6 +11,8 @@ ntr/ninja.toml
 ntr/pingpong.toml
 ntr/robot.toml
 ntr/shooting.toml
+ntr/shortlive.toml
+ntr/shugyo.toml
 
 # Fever games
 rvl/assemble.toml
@@ -25,3 +27,8 @@ rvl/fork.toml
 
 # Endless games
 ntr/cointoss.toml
+
+# Remixes
+remix/LED.toml
+remix/00.toml
+remix/01.toml

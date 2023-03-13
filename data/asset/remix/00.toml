@@ -1,0 +1,38 @@
+remix = true
+
+name = "Honeybee Remix"
+index = 0x60
+keywords = ["honeybee remix", "honeybee", "remix00"]
+
+[prologue]
+long = "remix00"
+
+[aac]
+long = ["remix_yellow_final", 0x10000CB]
+
+# Karate Man
+[[game]]
+scene = 0x28
+cellanim = "rvlKarate_remix00"
+effect = "rvlKarate"
+sfx = "GROUP_KARATE"
+
+# Fillbots
+[[game]]
+scene = 0x18
+cellanim = "ntrRobot_remix00"
+layout = "ntrRobot_long"
+effect = "ntrRobot"
+sfx = "GROUP_NTR_ROBOT"
+
+# Air Rally
+[[game]]
+scene = 0x1D
+cellanim = "rvlBadminton_remix00"
+sfx = "GROUP_BADMINTON"
+
+# Catchy Tune
+[[game]]
+scene = 0x3B
+cellanim = "ctrStep_remix00"
+sfx = "GROUP_STEP"

@@ -1,0 +1,27 @@
+name = "Big Rock Finish"
+scene = 0x1A
+keywords = ["big rock finish", "brf", "remix 7 ds", "ntrshortlive"]
+
+sfx = "GROUP_NTR_SHORT_LIVE"
+
+[versions]
+long = "Big Rock Finish"
+
+[indexes]
+long = 0x29
+
+[prologue]
+long = "ntrShortLive"
+
+[cellanim]
+long = "ntrShortLive_v0"
+
+[group]
+long.a = ["GROUP_WSD_NTR_SHORT_LIVE_A", "WSD_NTR_SHORT_LIVE_A", 0x10001F5]
+long.b = ["GROUP_WSD_NTR_SHORT_LIVE_B", "WSD_NTR_SHORT_LIVE_B", 0x10001F6]
+long.c = ["GROUP_WSD_NTR_SHORT_LIVE_C", "WSD_NTR_SHORT_LIVE_C", 0x10001F7]
+long.d = ["GROUP_WSD_NTR_SHORT_LIVE_D", "WSD_NTR_SHORT_LIVE_D", 0x10001F8]
+long.e = ["GROUP_WSD_NTR_SHORT_LIVE_E", "WSD_NTR_SHORT_LIVE_E", 0x10001F9]
+long.f = ["GROUP_WSD_NTR_SHORT_LIVE_F", "WSD_NTR_SHORT_LIVE_F", 0x10001FA]
+long.g = ["GROUP_WSD_NTR_SHORT_LIVE_G", "WSD_NTR_SHORT_LIVE_G", 0x10001FB]
+long.h = ["GROUP_WSD_NTR_SHORT_LIVE_H", "WSD_NTR_SHORT_LIVE_H", 0x10001FC]

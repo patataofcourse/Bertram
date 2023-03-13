@@ -1,0 +1,37 @@
+remix = true
+
+name = "Lush Remix"
+index = 0x5E
+keywords = ["lush remix", "lush", "led", "remixled"]
+
+[prologue]
+long = "remixLED"
+
+[aac]
+long = ["remix_led_final", 0x10000C7]
+
+# Spaceball
+[[game]]
+scene = 0
+cellanim = "agbBatter_remixLED"
+sfx = "GROUP_AGB_BATTER"
+
+# Dog Ninja
+[[game]]
+scene = 0x16
+cellanim = "ntrNinja_remixLED"
+layout = "ntrNinja"
+sfx = "GROUP_NTR_NINJA"
+
+# Hole in One
+[[game]]
+scene = 0x25
+cellanim = "rvlGolf_remixLED"
+sfx = "GROUP_GOLF"
+
+# Sumo Brothers
+[[game]]
+scene = 0x3C
+cellanim = "ctrSumou_remixLED"
+effect = "ctrSumou"
+sfx = "GROUP_SUMOU"
