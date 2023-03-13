@@ -1,14 +1,13 @@
 use std::process;
 
-use serenity::model::user::OnlineStatus;
 use serenity::prelude::*;
 
 use serenity::{
     framework::standard::{
         macros::{command, group},
-        Args, CommandGroup, CommandResult, HelpOptions, StandardFramework,
+        CommandResult,
     },
-    model::channel::Message,
+    model::{channel::Message, user::OnlineStatus},
 };
 
 #[group]

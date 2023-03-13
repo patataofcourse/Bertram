@@ -65,6 +65,7 @@ async fn main() {
         })
         .group(&GENERAL_GROUP)
         .group(&commands::admin::ADMIN_GROUP)
+        .group(&commands::crash::CRASHHANDLER_GROUP)
         .help(&MY_HELP);
 
     // Login with a bot token from the environment
