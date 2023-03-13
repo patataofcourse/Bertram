@@ -144,8 +144,8 @@ impl CrashLuma {
     pub fn get_call_stack(&self, size: usize) -> Vec<u32> {
         let mut call_stack = vec![];
         let mut i = 0;
-        while i < self.stack.len() && call_stack.len() < size  {
-            let val = u32::from_le_bytes(self.stack[i..i+4].try_into().unwrap());
+        while i < self.stack.len() && call_stack.len() < size {
+            let val = u32::from_le_bytes(self.stack[i..i + 4].try_into().unwrap());
             // TODO: get start and end of sections
             if (val >= 0x00100000 && val < 0x04000000) || (val >= 0x07000100 && val < 0x08000000) {
                 call_stack.push(val);

@@ -12,5 +12,7 @@ sym/rhm.*.csv
 
 test_files/
 
+run.sh
+
 # Added by cargo
 /target
