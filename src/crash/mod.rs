@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 pub mod analyze;
 pub mod luma;
 pub mod saltwater;
@@ -8,6 +10,21 @@ pub enum ExcType {
     UndefinedInst,
     PrefetchAbort,
     DataAbort,
+}
+
+impl Display for ExcType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::FloatingPoint => "floating point exception",
+                Self::UndefinedInst => "undefined instruction",
+                Self::PrefetchAbort => "prefetch abort",
+                Self::DataAbort => "data abort",
+            }
+        )
+    }
 }
 
 impl TryFrom<u32> for ExcType {

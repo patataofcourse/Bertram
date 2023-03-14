@@ -1,4 +1,7 @@
-use std::io::{Read, Seek, SeekFrom};
+use std::{
+    fmt::Display,
+    io::{Read, Seek, SeekFrom},
+};
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
@@ -39,6 +42,19 @@ impl From<u32> for LumaVersion {
 pub enum LumaProcessor {
     Arm9 = 9,
     Arm11(u16) = 11,
+}
+
+impl Display for LumaProcessor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Arm9 => "arm9".to_string(),
+                Self::Arm11(c) => format!("arm11 (core {c})"),
+            }
+        )
+    }
 }
 
 impl TryFrom<u32> for LumaProcessor {
@@ -153,5 +169,27 @@ impl CrashLuma {
             i += 4;
         }
         call_stack
+    }
+
+    pub fn get_title_info(&self) -> Option<(String, u64)> {
+        if let LumaProcessor::Arm9 = self.processor {
+            return None;
+        } else if self.extra.len() < 16 {
+            return None;
+        }
+
+        let process_raw = &self.extra[0..8];
+        let tid = u64::read_from(&mut &self.extra[8..16], LE).unwrap();
+
+        let mut process = String::new();
+        for i in 0..8 {
+            let c = process_raw[i];
+            if c == 0 {
+                break;
+            }
+            process += &<char as Into<String>>::into(char::from(c));
+        }
+
+        Some((process, tid))
     }
 }
