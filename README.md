@@ -1,10 +1,18 @@
 # Bertram
-A helper bot for Megamix modding! (currently reworking, see old code in [old/](./old))
+A helper bot for Megamix modding!
 
-Uses [patatbot](https://github.com/patataofcourse/patatbot/)
+## Rust version
+Bertram requires nightly Rust due to let-chains not being stable yet. Once let-chains are in mainline Rust, I'll look into supporting it again.
 
-## Setting up
-- This bot currently has some hardcoded private constants in `private.py`, which is not included in this repo. If you want to use this bot, wait until the need for `private.py` is removed, or figure it out yourself
-- The token for the bot is in a file called `tokens.py` at the root of the folder. All it needs is a single constant named `bot`, which will be the token of your bot
-- You'll need:
-    - A CSV list of symbols for US RHM in `sym/rhm.us.csv` (not included due to the sheer size of it), which can be exported from Ghidra's Symbol Table window. See `sym/example_sym.csv` for more information.
+As of the time of writing this readme, the latest working nightly is `nightly-2023-03-14`, although newer nightlies will likely work as well.
+
+## Running
+`cargo run` currently has some miscellaneous tests. To run Bertram, use `cargo run --bin bertram-bot --features bot` with the environment variable `DISCORD_TOKEN` set to the token of your bot. It's recommended to put this command and the environment variable setting in a sh or bat script.
+
+## Library
+Feel free to use Bertram's library for your own projects or as code reference!
+
+## rust-analyzer users
+For some reason, rust-analyzer fails to evaluate the attribute macros for commands and the `mismatched-arg-count` diagnostic wrongly happens. If you don't disable that diagnostic or turn off rust-analyzer altogether, rust-analyzer will point errors where there are none.
+
+If this stops happening, please let me know so I can take this warning off the README!

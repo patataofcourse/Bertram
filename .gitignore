@@ -14,5 +14,7 @@ test_files/
 
 run.sh
 
+.vscode
+
 # Added by cargo
 /target

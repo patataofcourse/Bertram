@@ -1,20 +1,13 @@
 use std::process;
 
-use serenity::prelude::*;
+use poise::serenity_prelude as serenity;
 
-use serenity::{
-    model::{channel::Message, user::OnlineStatus},
-};
-
-#[group]
-#[commands(kill)]
-struct Admin;
-
-#[command]
-#[owners_only]
+#[poise::command(prefix_command)]
 /// Kills the bot
-async fn kill(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.reply(ctx, "*poofs into smoke*").await?;
-    ctx.set_presence(None, OnlineStatus::Invisible).await;
+pub async fn kill(ctx: crate::Context<'_>) -> crate::Result<()> {
+    ctx.say("*poofs into smoke*").await?;
+    ctx.serenity_context()
+        .set_presence(None, serenity::OnlineStatus::Invisible)
+        .await;
     process::exit(0);
 }
