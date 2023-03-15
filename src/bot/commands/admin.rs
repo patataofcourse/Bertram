@@ -3,10 +3,6 @@ use std::process;
 use serenity::prelude::*;
 
 use serenity::{
-    framework::standard::{
-        macros::{command, group},
-        CommandResult,
-    },
     model::{channel::Message, user::OnlineStatus},
 };
 

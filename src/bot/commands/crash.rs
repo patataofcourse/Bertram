@@ -5,10 +5,6 @@ use bytestream::{StreamReader, ByteOrder::LittleEndian as LE};
 use serenity::prelude::*;
 
 use serenity::{
-    framework::standard::{
-        macros::{command, group},
-        Args, CommandResult,
-    },
     model::channel::Message,
 };
 
