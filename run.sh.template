@@ -1,3 +1,9 @@
 DISCORD_TOKEN="your token goes here"
 
 DISCORD_TOKEN=$DISCORD_TOKEN cargo run --bin bertram-bot --features bot
+
+# For enabling !recompile, add RECOMPILE="" before cargo run, then uncomment the following:
+
+# if [ $? == 99 ]; then
+#     . $(pwd)/$0
+# fi

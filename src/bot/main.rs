@@ -27,7 +27,19 @@ async fn main() {
                 mention_as_prefix: true,
                 ..Default::default()
             },
-            commands: vec![ping(), commands::admin::kill(), commands::admin::recompile(), commands::crash::luma(), help()],
+            commands: vec![
+                // misc / generic
+                ping(),
+                help(),
+
+                // admin
+                commands::admin::kill(),
+                commands::admin::recompile(),
+
+                // crash
+                commands::crash::luma(),
+                commands::crash::ctru(),
+            ],
             on_error: |err| Box::pin(on_error(err)),
             owners: {
                 let mut def = HashSet::new();

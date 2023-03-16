@@ -3,7 +3,10 @@ use std::io::Cursor;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
 use poise::Context;
 
-use bertram::crash::luma::{CrashLuma, LumaProcessor};
+use bertram::{
+    crash::luma::{CrashLuma, LumaProcessor},
+    ctru::CtruError,
+};
 
 pub async fn fetch_luma_dump(
     ctx: &crate::Context<'_>,
@@ -22,7 +25,20 @@ pub async fn fetch_luma_dump(
     Ok(CrashLuma::from_file(&mut Cursor::new(file.as_slice()))?)
 }
 
-#[poise::command(prefix_command, subcommands("stack"))]
+/// Analyzes an ErrDisp / ctru error code
+#[poise::command(prefix_command, category="Helpers")]
+pub async fn ctru(ctx: crate::Context<'_>, code: String) -> crate::Result<()> {
+    let Ok(code) = u32::from_str_radix(code.trim_start_matches("0x"), 16) else {Err("Not a valid hex number")?};
+    ctx.send(|f| {
+        f.content(format!("```{}```", CtruError::from_code(code)))
+            .reply(true)
+    })
+    .await?;
+    Ok(())
+}
+
+/// Gives a report on a Luma3DS crash dump (.dmp)
+#[poise::command(prefix_command, subcommands("stack"), category="For code modders")]
 pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;
 
@@ -121,6 +137,7 @@ pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resul
     Ok(())
 }
 
+/// Shows the stack of a Luma3DS crash dump (.dmp)
 #[poise::command(prefix_command)]
 pub async fn stack(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;

@@ -9,7 +9,7 @@ As of the time of writing this readme, the latest working nightly is `nightly-20
 ## Running
 `cargo run` currently has some miscellaneous tests. To run Bertram, use `cargo run --bin bertram-bot --features bot` with the environment variable `DISCORD_TOKEN` set to the token of your bot. It's recommended to put this command and the environment variable setting in a sh or bat script (example included in run.sh.template)
 
-You can also enable recompiling the bot through an owner-only command by setting environment variable `RECOMPILE` - keep in mind you'll have to rerun the bot yourself though (the exit code for this specific case is 99)
+You can also enable recompiling the bot through an owner-only command by setting environment variable `RECOMPILE` - keep in mind you'll have to rerun the bot in the script though (the exit code for this specific case is 99)
 
 ## Library
 Feel free to use Bertram's library for your own projects or as code reference!

@@ -16,5 +16,4 @@ run.sh
 
 .vscode
 
-# Added by cargo
 /target
