@@ -38,6 +38,7 @@ async fn main() {
 
                 // crash
                 commands::crash::luma(),
+                commands::crash::saltwater(),
                 commands::crash::ctru(),
             ],
             on_error: |err| Box::pin(on_error(err)),

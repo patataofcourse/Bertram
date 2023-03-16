@@ -4,7 +4,10 @@ use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
 use poise::Context;
 
 use bertram::{
-    crash::luma::{CrashLuma, LumaProcessor},
+    crash::{
+        luma::{CrashLuma, LumaProcessor},
+        saltwater::CrashSWD,
+    },
     ctru::CtruError,
 };
 
@@ -25,8 +28,25 @@ pub async fn fetch_luma_dump(
     Ok(CrashLuma::from_file(&mut Cursor::new(file.as_slice()))?)
 }
 
+pub async fn fetch_saltwater_dump(
+    ctx: &crate::Context<'_>,
+    link: Option<&str>,
+) -> crate::Result<CrashSWD> {
+    let file = if let Context::Prefix(c) = ctx && c.msg.attachments.len() > 0{
+        c.msg.attachments[0].download().await?
+    } else {
+        reqwest::get(link.ok_or("No file given")?)
+            .await?
+            .bytes()
+            .await?
+            .into()
+    };
+
+    Ok(CrashSWD::from_file(&mut Cursor::new(file.as_slice()))?)
+}
+
 /// Analyzes an ErrDisp / ctru error code
-#[poise::command(prefix_command, category="Helpers")]
+#[poise::command(prefix_command, category = "Helpers")]
 pub async fn ctru(ctx: crate::Context<'_>, code: String) -> crate::Result<()> {
     let Ok(code) = u32::from_str_radix(code.trim_start_matches("0x"), 16) else {Err("Not a valid hex number")?};
     ctx.send(|f| {
@@ -38,7 +58,7 @@ pub async fn ctru(ctx: crate::Context<'_>, code: String) -> crate::Result<()> {
 }
 
 /// Gives a report on a Luma3DS crash dump (.dmp)
-#[poise::command(prefix_command, subcommands("stack"), category="For code modders")]
+#[poise::command(prefix_command, subcommands("stack"), category = "For code modders")]
 pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;
 
@@ -167,5 +187,12 @@ pub async fn stack(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resu
     })
     .await
     .unwrap();
+    Ok(())
+}
+
+#[poise::command(prefix_command)]
+pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+    let dump = fetch_saltwater_dump(&ctx, link.as_deref()).await?;
+    ctx.say(format!("{:?}", dump)).await?;
     Ok(())
 }
