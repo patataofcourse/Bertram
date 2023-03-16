@@ -3,13 +3,14 @@
 use std::collections::HashSet;
 use std::env;
 
-use poise::FrameworkContext;
 use poise::{
-    event::Event, serenity_prelude as serenity, Framework, FrameworkError, FrameworkOptions,
+    serenity_prelude as serenity, Framework, FrameworkError, FrameworkOptions,
     PrefixFrameworkOptions,
 };
 
 pub mod commands;
+pub mod error;
+pub mod event;
 
 #[derive(Debug)]
 pub struct Data;
@@ -26,7 +27,7 @@ async fn main() {
                 mention_as_prefix: true,
                 ..Default::default()
             },
-            commands: vec![ping(), commands::admin::kill(), commands::crash::luma(), help()],
+            commands: vec![ping(), commands::admin::kill(), commands::admin::recompile(), commands::crash::luma(), help()],
             on_error: |err| Box::pin(on_error(err)),
             owners: {
                 let mut def = HashSet::new();
@@ -38,7 +39,7 @@ async fn main() {
                 def
             },
             event_handler: |ctx, event, framework, data| {
-                Box::pin(event_handler(ctx, event, framework, data))
+                Box::pin(event::event_handler(ctx, event, framework, data))
             },
             ..Default::default()
         })
@@ -58,29 +59,10 @@ async fn ping(ctx: Context<'_>) -> Result<()> {
 }
 
 async fn on_error(e: FrameworkError<'_, Data, Error>) {
-    println!("error {:?}\n---", e);
-}
-
-async fn event_handler<'a>(
-    ctx: &'a serenity::Context,
-    event: &'a Event<'a>,
-    _framework: FrameworkContext<'a, Data, Error>,
-    _data: &'a Data,
-) -> Result<()> {
-    match event {
-        Event::Ready { .. } | Event::Resume { .. } => {
-            println!("Bot ready!");
-            ctx.set_presence(
-                Some(serenity::Activity::playing(
-                    "Rhythm Heaven Megamix tm for the Nintendo 3DS tm",
-                )),
-                serenity::OnlineStatus::Online,
-            )
-            .await;
-        }
-        _ => {}
+    match error::on_error(e).await {
+        Ok(_) => {}
+        Err(e) => println!("Failed to send error diagnostic: {:?}\n\n", e),
     }
-    Ok(())
 }
 
 // help command copied from an example
@@ -92,8 +74,7 @@ pub async fn help(
     #[description = "Specific command to show help about"] command: Option<String>,
 ) -> Result<()> {
     let config = poise::builtins::HelpConfiguration {
-        extra_text_at_bottom: "\
-Type !help command for more info on a command.",
+        extra_text_at_bottom: "Type !help command for more info on a command.",
         ..Default::default()
     };
     poise::builtins::help(ctx, command.as_deref(), config).await?;

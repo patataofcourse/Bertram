@@ -1,0 +1,3 @@
+DISCORD_TOKEN="your token goes here"
+
+DISCORD_TOKEN=$DISCORD_TOKEN cargo run --bin bertram-bot --features bot
