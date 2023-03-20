@@ -75,7 +75,7 @@ impl CrashSWD {
 
     pub fn from_file(f: &mut (impl Read + Seek)) -> anyhow::Result<Self> {
         let mut magic = [0u8; 8];
-        f.read(&mut magic)?;
+        f.read_exact(&mut magic)?;
         if &magic != b"SELCRAH\0" {
             return Err(anyhow!("Not a Saltwater crash dump"));
         }
@@ -110,8 +110,8 @@ impl CrashSWD {
         let status_b = u32::read_from(f, LE)?;
 
         let mut call_stack = [0; Self::CALL_STACK_SIZE];
-        for i in 0..Self::CALL_STACK_SIZE {
-            call_stack[i] = u32::read_from(f, LE)?;
+        for call in &mut call_stack {
+            *call = u32::read_from(f, LE)?;
         }
 
         if crash_type == SWDType::Short {
@@ -132,8 +132,8 @@ impl CrashSWD {
         }
 
         let mut registers = [0; 14];
-        for i in 0..14 {
-            registers[i] = u32::read_from(f, LE)?;
+        for reg in &mut registers {
+            *reg = u32::read_from(f, LE)?;
         }
 
         let stack_length = {
@@ -147,7 +147,7 @@ impl CrashSWD {
         let mut stack = vec![0u8; stack_length as usize];
         f.read_exact(&mut stack)?;
 
-        return Ok(Self {
+        Ok(Self {
             crash_type,
             region,
             exception_type,
@@ -160,7 +160,7 @@ impl CrashSWD {
             call_stack,
             registers: Some(registers),
             stack: Some(stack),
-        });
+        })
     }
 }
 

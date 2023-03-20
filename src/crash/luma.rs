@@ -163,7 +163,7 @@ impl CrashLuma {
         while i < self.stack.len() && call_stack.len() < size {
             let val = u32::from_le_bytes(self.stack[i..i + 4].try_into().unwrap());
             // TODO: get start and end of sections
-            if (val >= 0x00100000 && val < 0x04000000) || (val >= 0x07000100 && val < 0x08000000) {
+            if (0x00100000..0x04000000).contains(&val) || (0x07000100..0x08000000).contains(&val) {
                 call_stack.push(val);
             }
             i += 4;
@@ -182,12 +182,11 @@ impl CrashLuma {
         let tid = u64::read_from(&mut &self.extra[8..16], LE).unwrap();
 
         let mut process = String::new();
-        for i in 0..8 {
-            let c = process_raw[i];
-            if c == 0 {
+        for c in process_raw {
+            if *c == 0 {
                 break;
             }
-            process += &<char as Into<String>>::into(char::from(c));
+            process += &<char as Into<String>>::into(char::from(*c));
         }
 
         Some((process, tid))

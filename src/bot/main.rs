@@ -46,7 +46,7 @@ async fn main() {
                 let mut def = HashSet::new();
                 //TODO: autodetect owners (default::Default :P)
                 def.insert(serenity::UserId(329357113480708106));
-                if let Ok(c) = env::var("PRIVATE_ACCOUNT") && let Ok(id) = u64::from_str_radix(&c, 10) {
+                if let Ok(c) = env::var("PRIVATE_ACCOUNT") && let Ok(id) = c.parse() {
                     def.insert(serenity::UserId(id));
                 }
                 def

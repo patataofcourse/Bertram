@@ -15,7 +15,7 @@ pub async fn kill(ctx: crate::Context<'_>) -> crate::Result<()> {
 /// Recompiles and reboots the bot
 #[poise::command(prefix_command, category = "Admin", owners_only)]
 pub async fn recompile(ctx: crate::Context<'_>) -> crate::Result<()> {
-    if let Ok(_) = env::var("RECOMPILE") {
+    if env::var("RECOMPILE").is_ok() {
         let m = ctx.say("Recompiling bot...").await?;
         process::Command::new("cargo")
             .arg("build")

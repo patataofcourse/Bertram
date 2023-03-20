@@ -15,7 +15,7 @@ pub async fn fetch_luma_dump(
     ctx: &crate::Context<'_>,
     link: Option<&str>,
 ) -> crate::Result<CrashLuma> {
-    let file = if let Context::Prefix(c) = ctx && c.msg.attachments.len() > 0{
+    let file = if let Context::Prefix(c) = ctx && c.msg.attachments.is_empty() {
         c.msg.attachments[0].download().await?
     } else {
         reqwest::get(link.ok_or("No file given")?)
@@ -32,7 +32,7 @@ pub async fn fetch_saltwater_dump(
     ctx: &crate::Context<'_>,
     link: Option<&str>,
 ) -> crate::Result<CrashSWD> {
-    let file = if let Context::Prefix(c) = ctx && c.msg.attachments.len() > 0{
+    let file = if let Context::Prefix(c) = ctx && c.msg.attachments.is_empty() {
         c.msg.attachments[0].download().await?
     } else {
         reqwest::get(link.ok_or("No file given")?)
@@ -88,7 +88,7 @@ pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resul
             ),
             dump.processor,
             dump.exception_type,
-            if dump.extra.len() > 0 {
+            if !dump.extra.is_empty() {
                 if let LumaProcessor::Arm11(_) = dump.processor {
                     let info = dump.get_title_info().unwrap();
                     format!("Current process: {} ({:016X})", info.0, info.1)
@@ -190,6 +190,7 @@ pub async fn stack(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resu
     Ok(())
 }
 
+/// Gives a report on a Saltwater crash dump (.swd)
 #[poise::command(prefix_command)]
 pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_saltwater_dump(&ctx, link.as_deref()).await?;

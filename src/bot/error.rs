@@ -33,7 +33,7 @@ pub async fn on_error(
                 format!(
                     "**Command not found:** {}\n\
                         See {prefix}help for a list of available commands",
-                    msg_content.split_once(" ").unwrap_or((msg_content, "")).0
+                    msg_content.split_once(' ').unwrap_or((msg_content, "")).0
                 ),
             )
             .await?;
@@ -54,7 +54,7 @@ pub async fn on_error(
             })
             .await?;
         }
-        e => println!("{}", e.to_string()),
+        e => println!("{}", e),
     }
     Ok(())
 }
