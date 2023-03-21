@@ -208,11 +208,12 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
                 "{}",
                 "\nCall stack (wip):\n",
                 // TODO: fetch symbols
-                " - {}",
-                " - {}",
-                " - {}",
-                " - {}",
-                " - {}",
+                // TODO: make this dependent on CALL_STACK_SIZE if possible
+                " - {:08x}\n",
+                " - {:08x}\n",
+                " - {:08x}\n",
+                " - {:08x}\n",
+                " - {:08x}\n",
                 "```"
             ),
             dump.region,
