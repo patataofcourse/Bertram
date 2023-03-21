@@ -1,4 +1,7 @@
-use std::io::{Read, Seek, SeekFrom};
+use std::{
+    fmt::Display,
+    io::{Read, Seek, SeekFrom},
+};
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
@@ -33,6 +36,18 @@ pub enum Region {
     UNK,
 }
 
+impl Display for Region {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::JP => write!(f, "Japan"),
+            Self::US => write!(f, "North America"),
+            Self::EU => write!(f, "Europe"),
+            Self::KR => write!(f, "Korea"),
+            Self::UNK => write!(f, "Unknown title ID!"),
+        }
+    }
+}
+
 impl From<u8> for Region {
     fn from(value: u8) -> Self {
         match value {
@@ -49,6 +64,29 @@ impl From<u8> for Region {
 pub enum SWDVersion {
     Debug { commit_hash: String },
     Release { major: u8, minor: u8, patch: u8 },
+}
+
+impl Display for SWDVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Debug { commit_hash } => write!(f, "commit {}", commit_hash),
+            Self::Release {
+                major,
+                minor,
+                patch,
+            } => write!(
+                f,
+                "{}.{}{}",
+                major,
+                minor,
+                if *patch != 0 {
+                    format!(".{}", patch)
+                } else {
+                    "".to_string()
+                }
+            ),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

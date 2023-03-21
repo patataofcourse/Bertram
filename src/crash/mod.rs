@@ -47,10 +47,22 @@ impl TryFrom<u8> for ExcType {
     }
 }
 
+impl ExcType {
+    /// Names for the Saltwater status registers
+    pub const fn status_reg_names(&self) -> [Option<&'static str>; 2] {
+        match self {
+            Self::UndefinedInst => [None, None],
+            Self::FloatingPoint => [Some("fpexc"), Some("fpinst")],
+            Self::PrefetchAbort => [Some("ifsr"), None],
+            Self::DataAbort => [Some("dfsr"), Some("far")],
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum ModdingEngine {
     RHMPatch,
-    SpiceRack(saltwater::SWDVersion, saltwater::Region),
+    SpiceRack(saltwater::SWDType, saltwater::SWDVersion, saltwater::Region),
 }
 
 #[derive(Debug, Clone)]

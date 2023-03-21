@@ -6,7 +6,7 @@ use poise::Context;
 use bertram::{
     crash::{
         luma::{CrashLuma, LumaProcessor},
-        saltwater::CrashSWD,
+        saltwater::{CrashSWD, SWDType},
     },
     ctru::CtruError,
 };
@@ -15,7 +15,7 @@ pub async fn fetch_luma_dump(
     ctx: &crate::Context<'_>,
     link: Option<&str>,
 ) -> crate::Result<CrashLuma> {
-    let file = if let Context::Prefix(c) = ctx && c.msg.attachments.is_empty() {
+    let file = if let Context::Prefix(c) = ctx && !c.msg.attachments.is_empty() {
         c.msg.attachments[0].download().await?
     } else {
         reqwest::get(link.ok_or("No file given")?)
@@ -32,7 +32,7 @@ pub async fn fetch_saltwater_dump(
     ctx: &crate::Context<'_>,
     link: Option<&str>,
 ) -> crate::Result<CrashSWD> {
-    let file = if let Context::Prefix(c) = ctx && c.msg.attachments.is_empty() {
+    let file = if let Context::Prefix(c) = ctx && !c.msg.attachments.is_empty() {
         c.msg.attachments[0].download().await?
     } else {
         reqwest::get(link.ok_or("No file given")?)
@@ -194,6 +194,81 @@ pub async fn stack(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resu
 #[poise::command(prefix_command)]
 pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_saltwater_dump(&ctx, link.as_deref()).await?;
-    ctx.say(format!("{:?}", dump)).await?;
+
+    ctx.send(|f| {
+        f.reply(true).content(format!(
+            concat!(
+                "**Saltwater crash dump:**\n",
+                "```Region: {}\n",
+                "Version: {}\n",
+                "Exception type: {}\n",
+                "Fault status: ...\n",
+                "\nRegister dump:\n",
+                "{}",
+                "{}",
+                "\nCall stack (wip):\n",
+                // TODO: fetch symbols
+                " - {}",
+                " - {}",
+                " - {}",
+                " - {}",
+                " - {}",
+                "```"
+            ),
+            dump.region,
+            dump.version,
+            dump.exception_type,
+            if dump.crash_type == SWDType::Extended {
+                let regs = dump.registers.unwrap();
+                format!(
+                    concat!(
+                        "r0      {:08x}    r1      {:08x}\n",
+                        "r2      {:08x}    r3      {:08x}\n",
+                        "r4      {:08x}    r5      {:08x}\n",
+                        "r6      {:08x}    r7      {:08x}\n",
+                        "r8      {:08x}    r9      {:08x}\n",
+                        "r10     {:08x}    r11     {:08x}\n",
+                        "r12     {:08x}    sp      {:08x}\n",
+                    ),
+                    //TODO: again, this might be better with a for loop?
+                    regs[0],
+                    regs[1],
+                    regs[2],
+                    regs[3],
+                    regs[4],
+                    regs[5],
+                    regs[6],
+                    regs[7],
+                    regs[8],
+                    regs[9],
+                    regs[10],
+                    regs[11],
+                    regs[12],
+                    regs[13],
+                )
+            } else {
+                "".to_string()
+            },
+            format!(
+                "lr      {:08x}    pc      {:08x}\n{}",
+                dump.lr,
+                dump.pc,
+                match dump.exception_type.status_reg_names() {
+                    [None, _] => "".to_string(),
+                    [Some(c), None] => format!("{:08}{:08x}", c, dump.status_a),
+                    [Some(c), Some(d)] => format!(
+                        "{:08}{:08x}    {:08}{:08x}",
+                        c, dump.status_a, d, dump.status_b
+                    ),
+                }
+            ),
+            dump.call_stack[0],
+            dump.call_stack[1],
+            dump.call_stack[2],
+            dump.call_stack[3],
+            dump.call_stack[4],
+        ))
+    })
+    .await?;
     Ok(())
 }

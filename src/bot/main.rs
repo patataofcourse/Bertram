@@ -31,11 +31,9 @@ async fn main() {
                 // misc / generic
                 ping(),
                 help(),
-
                 // admin
                 commands::admin::kill(),
                 commands::admin::recompile(),
-
                 // crash
                 commands::crash::luma(),
                 commands::crash::saltwater(),
