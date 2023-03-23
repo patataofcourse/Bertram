@@ -122,8 +122,7 @@ impl CrashSWD {
             .ok()
             .ok_or(anyhow!("Invalid Saltwater crash type"))?;
         let region = Region::from(u8::read_from(f, LE)?);
-        let exception_type = ExcType::try_from(u8::read_from(f, LE)?)
-            .ok()
+        let exception_type = ExcType::from_errf_code(u8::read_from(f, LE)?)
             .ok_or(anyhow!("Invalid exception type in Saltwater crash"))?;
         let release = bool::read_from(f, LE)?;
 

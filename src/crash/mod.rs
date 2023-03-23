@@ -57,6 +57,16 @@ impl ExcType {
             Self::DataAbort => [Some("dfsr"), Some("far")],
         }
     }
+
+    pub const fn from_errf_code(errf: u8) -> Option<Self> {
+        match errf {
+            0 => Some(Self::PrefetchAbort),
+            1 => Some(Self::DataAbort),
+            2 => Some(Self::UndefinedInst),
+            3 => Some(Self::FloatingPoint),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
