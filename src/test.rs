@@ -13,14 +13,15 @@ fn main() -> anyhow::Result<()> {
 
     //let mut f = File::open("test_files/crash_dump_00000001.dmp")?;
     //let luma_crash = CrashLuma::from_file(&mut f)?;
-    //let generic_luma = luma_crash.clone().as_generic(Some(5));
+    //let generic_luma = luma_crash..as_generic(Some(5));
 
     //println!("{:#X?}", generic_luma);
 
     let mut f = File::open("test_files/swcrash_00000.swd")?;
     let swd_crash = CrashSWD::from_file(&mut f)?;
+    let generic_swd = swd_crash.as_generic();
 
-    println!("{:#X?}", swd_crash);
+    println!("{:#X?}", generic_swd);
 
     Ok(())
 }

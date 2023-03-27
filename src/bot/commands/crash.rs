@@ -191,7 +191,7 @@ pub async fn stack(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resu
 }
 
 /// Gives a report on a Saltwater crash dump (.swd)
-#[poise::command(prefix_command)]
+#[poise::command(prefix_command, category = "For code modders")]
 pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_saltwater_dump(&ctx, link.as_deref()).await?;
 

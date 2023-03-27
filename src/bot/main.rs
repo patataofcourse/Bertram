@@ -52,6 +52,16 @@ async fn main() {
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event::event_handler(ctx, event, framework, data))
             },
+            // remove this after SpiceRack alpha is over
+            command_check: Some(|c: Context| {
+                Box::pin(async move {
+                    Ok([1088420249390555146].contains(&c.channel_id().0)
+                        || [1012766391897698394].contains(&match c.guild_id() {
+                            Some(c) => c.0,
+                            None => 0,
+                        }))
+                })
+            }),
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -64,6 +74,7 @@ async fn main() {
 }
 
 #[poise::command(prefix_command)]
+/// PONG.
 async fn ping(ctx: Context<'_>) -> Result<()> {
     ctx.say("Pong!").await?;
     Ok(())

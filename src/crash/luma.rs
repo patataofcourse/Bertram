@@ -135,7 +135,7 @@ impl CrashLuma {
     }
 
     pub fn as_generic(self, call_stack_size: Option<usize>) -> CrashInfo {
-        let r = self.registers[0..13].try_into().unwrap();
+        let r = Some(self.registers[0..13].try_into().unwrap());
         CrashInfo {
             call_stack: match call_stack_size {
                 None | Some(0) => None,
@@ -143,7 +143,7 @@ impl CrashLuma {
             },
             engine: super::ModdingEngine::RHMPatch,
             r,
-            sp: self.registers[13],
+            sp: Some(self.registers[13]),
             lr: self.registers[14],
             pc: self.registers[15],
             cpsr: self.registers[16],

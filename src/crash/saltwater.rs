@@ -6,10 +6,10 @@ use std::{
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
 
-use crate::crash::ExcType;
+use crate::crash::{CrashInfo, ExcType, ModdingEngine};
 
 #[repr(u8)]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum SWDType {
     Extended,
     Short,
@@ -27,7 +27,7 @@ impl TryFrom<u8> for SWDType {
 }
 
 #[repr(u8)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Region {
     JP,
     US,
@@ -199,10 +199,43 @@ impl CrashSWD {
             stack: Some(stack),
         })
     }
-}
 
-pub struct ExtendedSWD {
-    pub short: CrashSWD,
-    pub registers: [u32; 14],
-    pub stack: Vec<u8>,
+    pub fn as_generic(&self) -> CrashInfo {
+        CrashInfo {
+            engine: ModdingEngine::SpiceRack(self.crash_type, self.version.clone(), self.region),
+            r: self.registers.map(|c| c[..13].try_into().unwrap()),
+            sp: self.registers.map(|c| c[13]),
+            lr: self.lr,
+            pc: self.pc,
+            cpsr: self.cpsr,
+            dfsr: if self.exception_type == ExcType::DataAbort {
+                Some(self.status_a)
+            } else {
+                None
+            },
+            ifsr: if self.exception_type == ExcType::PrefetchAbort {
+                Some(self.status_a)
+            } else {
+                None
+            },
+            far: if self.exception_type == ExcType::DataAbort {
+                Some(self.status_b)
+            } else {
+                None
+            },
+            fpexc: if self.exception_type == ExcType::FloatingPoint {
+                Some(self.status_a)
+            } else {
+                None
+            },
+            fpinst: if self.exception_type == ExcType::FloatingPoint {
+                Some(self.status_b)
+            } else {
+                None
+            },
+            fpinst2: None,
+            stack: self.stack.clone(),
+            call_stack: Some(self.call_stack.to_vec()),
+        }
+    }
 }
