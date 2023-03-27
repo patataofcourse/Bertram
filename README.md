@@ -1,10 +1,18 @@
 # Bertram
 A helper bot for Megamix modding!
 
+## Symbols
+You'll need to add Megamix symbols files in the `sym` folder. An example (example_sym.csv) has been included. Required symbols are:
+    - Rhythm Heaven Megamix (US): `sym/rhm.us.csv`
+    - Rhythm Paradise Megamix (EU): `sym/rhm.eu.csv`
+    - Rhythm Sesang Megamix (KR): `sym/rhm.kr.csv`
+
+Symbols for all Saltwater stable versions will be included in the repository. For debug builds, please store them under `sym/sw.[COMMIT_HASH].csv`
+
 ## Rust version
 Bertram requires nightly Rust due to let-chains not being stable yet. Once let-chains are in mainline Rust, I'll look into supporting it again.
 
-As of the time of writing this readme, the latest working nightly is `nightly-2023-03-14`, although newer nightlies will likely work as well.
+As of the time of writing this readme, the latest working nightly is `nightly-2023-03-23`, although newer nightlies will likely work as well.
 
 ## Running
 `cargo run` currently has some miscellaneous tests. To run Bertram, use `cargo run --bin bertram-bot --features bot` with the environment variable `DISCORD_TOKEN` set to the token of your bot. It's recommended to put this command and the environment variable setting in a sh or bat script (example included in run.sh.template)
