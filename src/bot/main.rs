@@ -55,7 +55,7 @@ async fn main() {
             // remove this after SpiceRack alpha is over
             command_check: Some(|c: Context| {
                 Box::pin(async move {
-                    Ok([1088420249390555146].contains(&c.channel_id().0)
+                    Ok([1088507265759314020].contains(&c.channel_id().0)
                         || [1012766391897698394].contains(&match c.guild_id() {
                             Some(c) => c.0,
                             None => 0,
