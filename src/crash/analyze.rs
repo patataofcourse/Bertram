@@ -4,7 +4,7 @@ use csv::{DeserializeRecordsIter, Reader, Trim};
 use serde::Deserialize;
 use serde_hex::{SerHex, Strict};
 
-use crate::crash::{saltwater::Region, CrashInfo, ModdingEngine};
+use crate::crash::{saltwater::{Region, SWDVersion}, CrashInfo, ModdingEngine};
 
 #[derive(Debug, Clone)]
 pub struct CrashAnalysis {
@@ -58,14 +58,7 @@ impl Symbols {
 
         Ok(Self {
             megamix_reader: builder.from_path(megamix_path)?,
-            saltwater_reader: match builder.from_path(saltwater_path){
-                Ok(c) => Some(c),
-                Err(e) => if let csv::ErrorKind::Io(e_io) = e.kind() && let io::ErrorKind::NotFound = e_io.kind() {
-                    None
-                } else {
-                    Err(e)?
-                },
-            },
+            saltwater_reader: if saltwater_path.as_ref().as_os_str().is_empty() {None} else {Some(builder.from_path(saltwater_path)?)},
         })
     }
 
@@ -75,6 +68,16 @@ impl Symbols {
 
     pub fn saltwater(&mut self) -> Option<SymbolIter> {
         Some(self.saltwater_reader.as_mut()?.deserialize())
+    }
+
+    pub fn find_symbol(&mut self, pos: u32, has_saltwater: bool) -> Option<Function> {
+        // 1. find bounds (bounds.csv for megamix, location "Global::_text_end" in the saltwater symbols)
+        // 2:
+        //   if it's in megamix bounds, look through megamix symbols
+        //   if it's in saltwater bounds, look through saltwater symbols if given
+        //   otherwise, return None
+        
+        todo!();
     }
 }
 
@@ -98,7 +101,10 @@ impl CrashAnalysis {
                         ))?,
                     }
                 ),
-                format!(""),
+                format!("sym/sw.{}.csv", match version {
+                    SWDVersion::Debug{commit_hash} => commit_hash.clone(),
+                    SWDVersion::Release{major, minor, patch} => format!("{major}.{minor}{}", if *patch != 0 {format!(".{patch}")} else {"".to_string()})
+                }),
             ),
         };
         todo!();
