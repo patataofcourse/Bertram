@@ -15,11 +15,8 @@ pub async fn on_error(
             )
         }
         FrameworkError::ArgumentParse { error, ctx, .. } => {
-            ctx.send(|f| {
-                f.content(format!("**Wrong command usage:** {}\nUsage: TODO", error))
-                    .reply(true)
-            })
-            .await?;
+            ctx.say(format!("**Wrong command usage:** {}\nUsage: TODO", error))
+                .await?;
         }
         FrameworkError::UnknownCommand {
             msg_content,
@@ -46,15 +43,18 @@ pub async fn on_error(
             .await?;
         }
         FrameworkError::Command { error, ctx } => {
-            ctx.send(|f| {
-                f.reply(true).content(format!(
-                    "An error happened while trying to run the command: {}",
-                    error
-                ))
-            })
+            ctx.say(format!(
+                "An error happened while trying to run the command:```\n{}```",
+                error
+            ))
             .await?;
         }
-        e => println!("{}", e),
+        e => {
+            let Some(ctx) = e.ctx() else {
+            println!("{}", e); return Ok(())
+        };
+            ctx.say(format!("Error happened:```\n{}```", e)).await?;
+        }
     }
     Ok(())
 }

@@ -62,6 +62,9 @@ async fn main() {
                         }))
                 })
             }),
+            reply_callback: Some(|_, reply| {
+                reply.reply(true);
+            }),
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
