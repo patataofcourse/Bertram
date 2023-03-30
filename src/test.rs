@@ -3,7 +3,11 @@
 use std::fs::File;
 
 use bertram::{
-    crash::{analyze::CrashAnalysis, luma::CrashLuma, saltwater::CrashSWD},
+    crash::{
+        analyze::{CrashAnalysis, Symbols},
+        luma::CrashLuma,
+        saltwater::CrashSWD,
+    },
     ctru::CtruError,
 };
 
@@ -21,6 +25,11 @@ fn main() -> anyhow::Result<()> {
     let swd_crash = CrashSWD::from_file(&mut f)?;
     let generic_swd = swd_crash.as_generic();
 
+    Symbols::ctrplugin_symbols_to_csv(
+        &mut File::open("../SpiceRack/Saltwater/Saltwater.3gx")?,
+        &mut File::create("test_files/sw.test.csv")?,
+        true,
+    )?;
     CrashAnalysis::from(&generic_swd)?;
 
     println!("{:#X?}", generic_swd);

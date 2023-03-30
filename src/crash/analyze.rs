@@ -1,11 +1,19 @@
-use std::{fs::File, io::{self, Write, Seek, Read, SeekFrom}, path::Path};
+use std::{
+    ffi::CString,
+    fs::File,
+    io::{self, Read, Seek, SeekFrom, Write},
+    path::Path,
+};
 
-use bytestream::{StreamReader, ByteOrder::LittleEndian as LE};
-use csv::{DeserializeRecordsIter, Reader, Trim};
-use serde::Deserialize;
+use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
+use csv::{DeserializeRecordsIter, Reader, Trim, Writer, WriterBuilder};
+use serde::{Deserialize, Serialize};
 use serde_hex::{SerHex, Strict};
 
-use crate::crash::{saltwater::{Region, SWDVersion}, CrashInfo, ModdingEngine};
+use crate::crash::{
+    saltwater::{Region, SWDVersion},
+    CrashInfo, ModdingEngine,
+};
 
 #[derive(Debug, Clone)]
 pub struct CrashAnalysis {
@@ -23,7 +31,7 @@ pub struct Function {
     pub symbol: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CsvSymbol {
     #[serde(alias = "Name")]
     pub name: String,
@@ -44,7 +52,7 @@ impl CsvSymbol {
 
 type SymbolIter<'a> = DeserializeRecordsIter<'a, File, CsvSymbol>;
 
-struct Symbols {
+pub struct Symbols {
     megamix_reader: Reader<File>,
     saltwater_reader: Option<Reader<File>>,
 }
@@ -59,7 +67,11 @@ impl Symbols {
 
         Ok(Self {
             megamix_reader: builder.from_path(megamix_path)?,
-            saltwater_reader: if saltwater_path.as_ref().as_os_str().is_empty() {None} else {Some(builder.from_path(saltwater_path)?)},
+            saltwater_reader: if saltwater_path.as_ref().as_os_str().is_empty() {
+                None
+            } else {
+                Some(builder.from_path(saltwater_path)?)
+            },
         })
     }
 
@@ -72,20 +84,27 @@ impl Symbols {
     }
 
     pub fn find_symbol(&mut self, pos: u32, has_saltwater: bool) -> Option<Function> {
-        // 1. find bounds (bounds.csv for megamix, location "Global::_text_end" in the saltwater symbols)
+        // 1. find bounds (bounds.csv for megamix, location "Global::_TEXT_END" in the saltwater symbols)
         // 2:
         //   if it's in megamix bounds, look through megamix symbols
         //   if it's in saltwater bounds, look through saltwater symbols if given
         //   otherwise, return None
-        
+
         todo!();
     }
 
-    pub fn ctrplugin_symbols_to_csv<F:Read+Seek, W: Write>(plg: &mut F, csv: &mut W, demangle: bool) -> io::Result<()> {
+    pub fn ctrplugin_symbols_to_csv<F: Read + Seek, W: Write>(
+        plg: &mut F,
+        csv: &mut W,
+        demangle: bool,
+    ) -> io::Result<()> {
         let mut magic = [0u8; 8];
         plg.read_exact(&mut magic)?;
         if &magic != b"3GX$0002" {
-            Err(io::Error::new(io::ErrorKind::Other, "not a compatible .3gx file"))?
+            Err(io::Error::new(
+                io::ErrorKind::Other,
+                "not a compatible .3gx file",
+            ))?
         }
         plg.seek(SeekFrom::Start(0x88))?;
 
@@ -93,21 +112,42 @@ impl Symbols {
         let symbols_offset = u32::read_from(plg, LE)? as u64;
         let name_table = u32::read_from(plg, LE)? as u64;
 
-        let mut symbols = vec![];
+        let mut writer = Writer::from_writer(csv);
 
         for i in 0..num_symbols {
-            print!("\rReading symbols ({i}/{num_symbols})");
             plg.seek(SeekFrom::Start(symbols_offset + 0xC * i))?;
 
             let location = u32::read_from(plg, LE)?;
             plg.seek(SeekFrom::Current(4))?; // size, flags
-            let name_pos = u32::read_from(plg, LE)?;
+            let name_pos = u32::read_from(plg, LE)? as u64;
 
+            plg.seek(SeekFrom::Start(name_table + name_pos))?;
+            let mut name = vec![];
+            loop {
+                let c = u8::read_from(plg, LE)?;
+                if c == 0 {
+                    break;
+                }
+                name.push(c);
+            }
+            let Ok(name) = CString::new(name)?.into_string() else {
+                Err(io::Error::new(io::ErrorKind::Other, "could not read symbol name"))?
+            };
 
-            symbols.push(CsvSymbol{name: todo!(), location, namespace: None})
+            if demangle {
+                //TODO: demangle symbol names
+            }
+
+            writer.serialize(CsvSymbol {
+                name,
+                location,
+                namespace: None,
+            })?
+
+            //TODO: if this is _TEXT_END, end here
         }
-        
-        todo!();
+
+        Ok(())
     }
 }
 
@@ -131,10 +171,24 @@ impl CrashAnalysis {
                         ))?,
                     }
                 ),
-                format!("sym/sw.{}.csv", match version {
-                    SWDVersion::Debug{commit_hash} => commit_hash.clone(),
-                    SWDVersion::Release{major, minor, patch} => format!("{major}.{minor}{}", if *patch != 0 {format!(".{patch}")} else {"".to_string()})
-                }),
+                format!(
+                    "sym/sw.{}.csv",
+                    match version {
+                        SWDVersion::Debug { commit_hash } => commit_hash.clone(),
+                        SWDVersion::Release {
+                            major,
+                            minor,
+                            patch,
+                        } => format!(
+                            "{major}.{minor}{}",
+                            if *patch != 0 {
+                                format!(".{patch}")
+                            } else {
+                                "".to_string()
+                            }
+                        ),
+                    }
+                ),
             )?,
         };
         todo!();
