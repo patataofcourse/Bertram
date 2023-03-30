@@ -1,5 +1,6 @@
-use std::{fs::File, io, path::Path};
+use std::{fs::File, io::{self, Write, Seek, Read, SeekFrom}, path::Path};
 
+use bytestream::{StreamReader, ByteOrder::LittleEndian as LE};
 use csv::{DeserializeRecordsIter, Reader, Trim};
 use serde::Deserialize;
 use serde_hex::{SerHex, Strict};
@@ -79,6 +80,35 @@ impl Symbols {
         
         todo!();
     }
+
+    pub fn ctrplugin_symbols_to_csv<F:Read+Seek, W: Write>(plg: &mut F, csv: &mut W, demangle: bool) -> io::Result<()> {
+        let mut magic = [0u8; 8];
+        plg.read_exact(&mut magic)?;
+        if &magic != b"3GX$0002" {
+            Err(io::Error::new(io::ErrorKind::Other, "not a compatible .3gx file"))?
+        }
+        plg.seek(SeekFrom::Start(0x88))?;
+
+        let num_symbols = u32::read_from(plg, LE)? as u64;
+        let symbols_offset = u32::read_from(plg, LE)? as u64;
+        let name_table = u32::read_from(plg, LE)? as u64;
+
+        let mut symbols = vec![];
+
+        for i in 0..num_symbols {
+            print!("\rReading symbols ({i}/{num_symbols})");
+            plg.seek(SeekFrom::Start(symbols_offset + 0xC * i))?;
+
+            let location = u32::read_from(plg, LE)?;
+            plg.seek(SeekFrom::Current(4))?; // size, flags
+            let name_pos = u32::read_from(plg, LE)?;
+
+
+            symbols.push(CsvSymbol{name: todo!(), location, namespace: None})
+        }
+        
+        todo!();
+    }
 }
 
 impl CrashAnalysis {
@@ -86,7 +116,7 @@ impl CrashAnalysis {
 
     pub fn from(crash: &CrashInfo) -> io::Result<Self> {
         let symbols = match &crash.engine {
-            ModdingEngine::RHMPatch => Symbols::from_paths("sym/rhm.us.csv", ""),
+            ModdingEngine::RHMPatch => Symbols::from_paths("sym/rhm.us.csv", "")?,
             ModdingEngine::SpiceRack(_, version, region) => Symbols::from_paths(
                 format!(
                     "sym/rhm.{}.csv",
@@ -105,7 +135,7 @@ impl CrashAnalysis {
                     SWDVersion::Debug{commit_hash} => commit_hash.clone(),
                     SWDVersion::Release{major, minor, patch} => format!("{major}.{minor}{}", if *patch != 0 {format!(".{patch}")} else {"".to_string()})
                 }),
-            ),
+            )?,
         };
         todo!();
     }
