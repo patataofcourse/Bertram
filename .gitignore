@@ -9,6 +9,7 @@ private.py
 tokens.py
 
 sym/rhm.*.csv
+sym/sw._*.csv
 
 test_files/
 

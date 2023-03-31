@@ -1,12 +1,15 @@
 use std::{
     ffi::CString,
     fs::File,
-    io::{self, Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Write},
     path::Path,
 };
 
+use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
-use csv::{DeserializeRecordsIter, Reader, Trim, Writer, WriterBuilder};
+use csv::{DeserializeRecordsIter, Reader, Trim, Writer};
+use grep_matcher::{Captures, Matcher};
+use grep_regex::RegexMatcher;
 use serde::{Deserialize, Serialize};
 use serde_hex::{SerHex, Strict};
 
@@ -57,11 +60,28 @@ pub struct Symbols {
     saltwater_reader: Option<Reader<File>>,
 }
 
+pub fn get_3gx_commit_hash(f: &mut (impl Read + Seek)) -> anyhow::Result<Option<String>> {
+    let ref_finder = RegexMatcher::new(r"rev ([0-9a-f]{7})")?;
+    let mut captures = ref_finder.new_captures()?;
+    let mut buf = vec![];
+    f.read_to_end(&mut buf)?;
+    ref_finder.captures(&buf, &mut captures)?;
+    f.seek(SeekFrom::Start(0))?;
+
+    if let Some(a) = captures.get(1) {
+        Ok(Some(
+            String::from_utf8(buf[a.start()..a.end()].to_owned()).unwrap(),
+        ))
+    } else {
+        Ok(None)
+    }
+}
+
 impl Symbols {
     pub fn from_paths(
         megamix_path: impl AsRef<Path>,
         saltwater_path: impl AsRef<Path>,
-    ) -> io::Result<Self> {
+    ) -> anyhow::Result<Self> {
         let mut builder = csv::ReaderBuilder::new();
         builder.trim(Trim::Fields);
 
@@ -97,14 +117,11 @@ impl Symbols {
         plg: &mut F,
         csv: &mut W,
         demangle: bool,
-    ) -> io::Result<()> {
+    ) -> anyhow::Result<()> {
         let mut magic = [0u8; 8];
         plg.read_exact(&mut magic)?;
         if &magic != b"3GX$0002" {
-            Err(io::Error::new(
-                io::ErrorKind::Other,
-                "not a compatible .3gx file",
-            ))?
+            Err(anyhow!("not a compatible .3gx file",))?
         }
         plg.seek(SeekFrom::Start(0x88))?;
 
@@ -131,7 +148,7 @@ impl Symbols {
                 name.push(c);
             }
             let Ok(name) = CString::new(name)?.into_string() else {
-                Err(io::Error::new(io::ErrorKind::Other, "could not read symbol name"))?
+                Err(anyhow!("could not read symbol name"))?
             };
 
             if demangle {
@@ -139,12 +156,14 @@ impl Symbols {
             }
 
             writer.serialize(CsvSymbol {
-                name,
+                name: name.clone(),
                 location,
                 namespace: None,
-            })?
+            })?;
 
-            //TODO: if this is _TEXT_END, end here
+            if name == "_TEXT_END" {
+                break;
+            }
         }
 
         Ok(())
@@ -154,7 +173,7 @@ impl Symbols {
 impl CrashAnalysis {
     const DISPLAY_PC_IF_OOB: bool = false;
 
-    pub fn from(crash: &CrashInfo) -> io::Result<Self> {
+    pub fn from(crash: &CrashInfo) -> anyhow::Result<Self> {
         let symbols = match &crash.engine {
             ModdingEngine::RHMPatch => Symbols::from_paths("sym/rhm.us.csv", "")?,
             ModdingEngine::SpiceRack(_, version, region) => Symbols::from_paths(
@@ -165,16 +184,13 @@ impl CrashAnalysis {
                         Region::US => "us",
                         Region::EU => "eu",
                         Region::KR => "kr",
-                        Region::UNK => Err(io::Error::new(
-                            io::ErrorKind::Other,
-                            "Cannot analyze unknown region"
-                        ))?,
+                        Region::UNK => Err(anyhow!("Cannot analyze unknown region"))?,
                     }
                 ),
                 format!(
                     "sym/sw.{}.csv",
                     match version {
-                        SWDVersion::Debug { commit_hash } => commit_hash.clone(),
+                        SWDVersion::Debug { commit_hash } => "_".to_string() + commit_hash,
                         SWDVersion::Release {
                             major,
                             minor,

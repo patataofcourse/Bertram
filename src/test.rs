@@ -1,10 +1,14 @@
 #![allow(unused)]
 
-use std::fs::File;
+use std::{
+    ffi::{CStr, CString},
+    fs::File,
+    io::{Read, Seek, SeekFrom},
+};
 
 use bertram::{
     crash::{
-        analyze::{CrashAnalysis, Symbols},
+        analyze::{self, CrashAnalysis, Symbols},
         luma::CrashLuma,
         saltwater::CrashSWD,
     },
@@ -25,11 +29,13 @@ fn main() -> anyhow::Result<()> {
     let swd_crash = CrashSWD::from_file(&mut f)?;
     let generic_swd = swd_crash.as_generic();
 
-    Symbols::ctrplugin_symbols_to_csv(
-        &mut File::open("../SpiceRack/Saltwater/Saltwater.3gx")?,
-        &mut File::create("test_files/sw.test.csv")?,
-        true,
-    )?;
+    let mut _3gx = File::open("../SpiceRack/Saltwater/Saltwater.3gx")?;
+    let mut out = File::create(format!(
+        "sym/sw._{}.csv",
+        analyze::get_3gx_commit_hash(&mut _3gx)?.unwrap()
+    ))?;
+
+    Symbols::ctrplugin_symbols_to_csv(&mut _3gx, &mut out, true)?;
     CrashAnalysis::from(&generic_swd)?;
 
     println!("{:#X?}", generic_swd);
