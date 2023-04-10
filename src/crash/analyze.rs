@@ -71,7 +71,7 @@ pub struct CsvBounds {
 
 type SymbolIter<'a> = DeserializeRecordsIter<'a, File, CsvSymbol>;
 
-struct Symbols {
+pub struct Symbols {
     megamix_reader: Reader<File>,
     saltwater_reader: Option<Reader<File>>,
     megamix_end: Option<u32>,
@@ -96,7 +96,7 @@ pub fn get_3gx_commit_hash(f: &mut (impl Read + Seek)) -> anyhow::Result<Option<
 }
 
 impl Symbols {
-    pub fn from_paths(
+    pub(crate) fn from_paths(
         megamix_path: impl AsRef<Path>,
         saltwater_path: impl AsRef<Path>,
     ) -> anyhow::Result<Self> {
