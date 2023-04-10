@@ -36,6 +36,7 @@ fn main() -> anyhow::Result<()> {
     ))?;
 
     Symbols::ctrplugin_symbols_to_csv(&mut _3gx, &mut out, true)?;
+    drop(out);
     CrashAnalysis::from(&generic_swd)?;
 
     println!("{:#X?}", generic_swd);

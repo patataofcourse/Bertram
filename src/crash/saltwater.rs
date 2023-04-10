@@ -36,6 +36,18 @@ pub enum Region {
     UNK,
 }
 
+impl Region {
+    pub fn matches(&self, s: &str) -> bool {
+        match self {
+            Self::JP => s.to_lowercase() == "jp",
+            Self::US => s.to_lowercase() == "us",
+            Self::EU => s.to_lowercase() == "eu",
+            Self::KR => s.to_lowercase() == "kr",
+            Self::UNK => false,
+        }
+    }
+}
+
 impl Display for Region {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

@@ -53,6 +53,22 @@ impl CsvSymbol {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CsvBounds {
+    #[serde(alias = "Version")]
+    pub version: String,
+    #[serde(alias = "Code offset", with = "SerHex::<Strict>")]
+    pub code: u32,
+    #[serde(alias = "Rodata offset", with = "SerHex::<Strict>")]
+    pub rodata: u32,
+    #[serde(alias = "Data offset", with = "SerHex::<Strict>")]
+    pub data: u32,
+    #[serde(alias = "BSS start", alias = "BSS offset", with = "SerHex::<Strict>")]
+    pub bss_offset: u32,
+    #[serde(alias = "BSS size", with = "SerHex::<Strict>")]
+    pub bss_size: u32,
+}
+
 type SymbolIter<'a> = DeserializeRecordsIter<'a, File, CsvSymbol>;
 
 pub struct Symbols {
@@ -103,7 +119,17 @@ impl Symbols {
         Some(self.saltwater_reader.as_mut()?.deserialize())
     }
 
-    pub fn find_symbol(&mut self, pos: u32, has_saltwater: bool) -> Option<Function> {
+    pub fn find_symbol(&mut self, region: Region, pos: u32) -> anyhow::Result<Option<Function>> {
+        let mut builder = csv::ReaderBuilder::new();
+        builder.trim(Trim::Fields);
+
+        let mut megamix_bounds = builder.from_path("sym/bounds.csv")?;
+        let Some(a) = megamix_bounds.deserialize::<CsvBounds>().find(|c| {
+            let Ok(bound) = c else { return false };
+            region.matches(&bound.version)
+        }) else { return Ok(None) };
+        println!("{:X}", a.unwrap().rodata);
+
         // 1. find bounds (bounds.csv for megamix, location "Global::_TEXT_END" in the saltwater symbols)
         // 2:
         //   if it's in megamix bounds, look through megamix symbols
@@ -174,39 +200,47 @@ impl CrashAnalysis {
     const DISPLAY_PC_IF_OOB: bool = false;
 
     pub fn from(crash: &CrashInfo) -> anyhow::Result<Self> {
-        let symbols = match &crash.engine {
-            ModdingEngine::RHMPatch => Symbols::from_paths("sym/rhm.us.csv", "")?,
-            ModdingEngine::SpiceRack(_, version, region) => Symbols::from_paths(
-                format!(
-                    "sym/rhm.{}.csv",
-                    match region {
-                        Region::JP => "jp",
-                        Region::US => "us",
-                        Region::EU => "eu",
-                        Region::KR => "kr",
-                        Region::UNK => Err(anyhow!("Cannot analyze unknown region"))?,
-                    }
-                ),
-                format!(
-                    "sym/sw.{}.csv",
-                    match version {
-                        SWDVersion::Debug { commit_hash } => "_".to_string() + commit_hash,
-                        SWDVersion::Release {
-                            major,
-                            minor,
-                            patch,
-                        } => format!(
-                            "{major}.{minor}{}",
-                            if *patch != 0 {
-                                format!(".{patch}")
-                            } else {
-                                "".to_string()
-                            }
-                        ),
-                    }
-                ),
-            )?,
+        let region;
+        let mut symbols = match &crash.engine {
+            ModdingEngine::RHMPatch => {
+                region = Region::US;
+                Symbols::from_paths("sym/rhm.us.csv", "")?
+            }
+            ModdingEngine::SpiceRack(_, version, region_) => {
+                region = *region_;
+                Symbols::from_paths(
+                    format!(
+                        "sym/rhm.{}.csv",
+                        match region {
+                            Region::JP => "jp",
+                            Region::US => "us",
+                            Region::EU => "eu",
+                            Region::KR => "kr",
+                            Region::UNK => Err(anyhow!("Cannot analyze unknown region"))?,
+                        }
+                    ),
+                    format!(
+                        "sym/sw.{}.csv",
+                        match version {
+                            SWDVersion::Debug { commit_hash } => "_".to_string() + commit_hash,
+                            SWDVersion::Release {
+                                major,
+                                minor,
+                                patch,
+                            } => format!(
+                                "{major}.{minor}{}",
+                                if *patch != 0 {
+                                    format!(".{patch}")
+                                } else {
+                                    "".to_string()
+                                }
+                            ),
+                        }
+                    ),
+                )?
+            }
         };
+        symbols.find_symbol(region, 0)?;
         todo!();
     }
 }
