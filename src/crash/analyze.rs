@@ -217,6 +217,7 @@ impl Symbols {
                 namespace: None,
             })?;
 
+            // ctrplugin symbols are sorted, and we don't need data stuff, so just yeet that
             if name == "_TEXT_END" {
                 break;
             }

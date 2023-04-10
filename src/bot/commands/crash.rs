@@ -153,7 +153,8 @@ pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resul
 
 /// Shows the stack of a Luma3DS crash dump (.dmp)
 #[poise::command(prefix_command)]
-pub async fn stack(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+pub async fn stack(ctx: crate::Context<'_>, link: Option<String>, size: Option<usize>) -> crate::Result<()> {
+    //TODO: maybe make it possible for size to be given on its own?
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;
 
     let mut formatted_stack = String::new();
@@ -165,8 +166,7 @@ pub async fn stack(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resu
             u32::read_from(&mut stack_slice, LE).unwrap(),
             if i % 4 == 3 { "\n" } else { " " }
         );
-        //TODO: customizable stack size for printing
-        if (formatted_stack.clone() + ".").lines().count() >= 16 {
+        if (formatted_stack.clone() + ".").lines().count() > size.unwrap_or(16) {
             break;
         }
     }
@@ -192,7 +192,7 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
             "```Region: {}\n",
             "Version: {}\n",
             "Exception type: {}\n",
-            "Fault status: ...\n",
+            "Fault status: ...\n", //TODO
             "\nRegister dump:\n",
             "{}",
             "{}",
