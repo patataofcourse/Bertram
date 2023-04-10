@@ -124,19 +124,42 @@ impl Symbols {
         builder.trim(Trim::Fields);
 
         let mut megamix_bounds = builder.from_path("sym/bounds.csv")?;
-        let Some(a) = megamix_bounds.deserialize::<CsvBounds>().find(|c| {
+        let Some(Ok(a)) = megamix_bounds.deserialize::<CsvBounds>().find(|c| {
             let Ok(bound) = c else { return false };
             region.matches(&bound.version)
-        }) else { return Ok(None) };
-        println!("{:X}", a.unwrap().rodata);
+        }) else { Err(anyhow!("Bounds file doesn't include {:?} region", region))? };
+        let megamix_end = a.rodata;
 
-        // 1. find bounds (bounds.csv for megamix, location "Global::_TEXT_END" in the saltwater symbols)
-        // 2:
-        //   if it's in megamix bounds, look through megamix symbols
-        //   if it's in saltwater bounds, look through saltwater symbols if given
-        //   otherwise, return None
+        let saltwater_end = if let Some(mut sw_syms) = self.saltwater() {
+                if let Some(Ok(a)) = sw_syms.find(|c| {
+                    if let Ok(c) = c {
+                        c.full_name() == "_TEXT_END"
+                    } else {
+                        false
+                    }
+                }) {
+                    a.location
+                } else {
+                    Err(anyhow!(
+                        "Saltwater symbols file doesn't contain _TEXT_END symbol"
+                    ))?
+                }
+        } else {
+            // value here is irrelevant
+            0
+        };
 
-        todo!();
+        println!("{:X} // {:X}", megamix_end, saltwater_end);
+
+        if pos >= 0x00100000 && pos < megamix_end {
+            // TODO: if it's in megamix bounds, look through megamix symbols
+            todo!();
+        } else if let Some(mut sw_syms) = self.saltwater() && pos >= 0x07000000 && pos <= saltwater_end {
+            // TODO: if it's in saltwater bounds, look through saltwater symbols if given
+            todo!();
+        } else {
+            Ok(None)
+        }
     }
 
     pub fn ctrplugin_symbols_to_csv<F: Read + Seek, W: Write>(
