@@ -71,9 +71,11 @@ pub struct CsvBounds {
 
 type SymbolIter<'a> = DeserializeRecordsIter<'a, File, CsvSymbol>;
 
-pub struct Symbols {
+struct Symbols {
     megamix_reader: Reader<File>,
     saltwater_reader: Option<Reader<File>>,
+    megamix_end: Option<u32>,
+    saltwater_end: Option<u32>,
 }
 
 pub fn get_3gx_commit_hash(f: &mut (impl Read + Seek)) -> anyhow::Result<Option<String>> {
@@ -108,6 +110,8 @@ impl Symbols {
             } else {
                 Some(builder.from_path(saltwater_path)?)
             },
+            megamix_end: None,
+            saltwater_end: None,
         })
     }
 
@@ -119,7 +123,7 @@ impl Symbols {
         Some(self.saltwater_reader.as_mut()?.deserialize())
     }
 
-    pub fn find_symbol(&mut self, region: Region, pos: u32) -> anyhow::Result<Option<Function>> {
+    pub fn init_bounds(&mut self, region: Region) -> anyhow::Result<()> {
         let mut builder = csv::ReaderBuilder::new();
         builder.trim(Trim::Fields);
 
@@ -128,9 +132,9 @@ impl Symbols {
             let Ok(bound) = c else { return false };
             region.matches(&bound.version)
         }) else { Err(anyhow!("Bounds file doesn't include {:?} region", region))? };
-        let megamix_end = a.rodata;
+        self.megamix_end = Some(a.rodata);
 
-        let saltwater_end = if let Some(mut sw_syms) = self.saltwater() {
+        self.saltwater_end = if let Some(mut sw_syms) = self.saltwater() {
                 if let Some(Ok(a)) = sw_syms.find(|c| {
                     if let Ok(c) = c {
                         c.full_name() == "_TEXT_END"
@@ -138,23 +142,26 @@ impl Symbols {
                         false
                     }
                 }) {
-                    a.location
+                    Some(a.location)
                 } else {
                     Err(anyhow!(
                         "Saltwater symbols file doesn't contain _TEXT_END symbol"
                     ))?
                 }
         } else {
-            // value here is irrelevant
-            0
+            None
         };
+        Ok(())
+    }
 
-        println!("{:X} // {:X}", megamix_end, saltwater_end);
+    pub fn find_symbol(&mut self, pos: u32) -> anyhow::Result<Option<Function>> {
+        let Some(megamix_end) = self.megamix_end else {Err(anyhow!("Tried to get a symbol with uninitialized bounds!"))?};
 
         if pos >= 0x00100000 && pos < megamix_end {
             // TODO: if it's in megamix bounds, look through megamix symbols
+            let mut mm_syms = self.megamix();
             todo!();
-        } else if let Some(mut sw_syms) = self.saltwater() && pos >= 0x07000000 && pos <= saltwater_end {
+        } else if let Some(mut sw_syms) = self.saltwater() && pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() {
             // TODO: if it's in saltwater bounds, look through saltwater symbols if given
             todo!();
         } else {
@@ -263,7 +270,8 @@ impl CrashAnalysis {
                 )?
             }
         };
-        symbols.find_symbol(region, 0)?;
+        symbols.init_bounds(region)?;
+        symbols.find_symbol(crash.pc)?;
         todo!();
     }
 }
