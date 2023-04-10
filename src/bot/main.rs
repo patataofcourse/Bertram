@@ -18,6 +18,8 @@ type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 type Result<T> = std::result::Result<T, Error>;
 
+const BERTRAM_COLOR: i32 = 0x99ff33;
+
 #[tokio::main]
 async fn main() {
     let framework = Framework::builder()
@@ -34,6 +36,7 @@ async fn main() {
                 // admin
                 commands::admin::kill(),
                 commands::admin::recompile(),
+                commands::admin::info(),
                 // crash
                 commands::crash::luma(),
                 commands::crash::saltwater(),

@@ -34,3 +34,10 @@ pub async fn recompile(ctx: crate::Context<'_>) -> crate::Result<()> {
         Ok(())
     }
 }
+
+#[poise::command(prefix_command,category="Admin",owners_only)]
+pub async fn info(ctx: crate::Context<'_>) -> crate::Result<()> {
+    let rustc_ver = String::from_utf8(process::Command::new("rustc").arg("-V").output()?.stdout).unwrap();
+    ctx.send(|c| c.embed(|e| e.title("Bertram info").color(crate::BERTRAM_COLOR).field("rustc version", rustc_ver, false))).await?;
+    Ok(())
+}
