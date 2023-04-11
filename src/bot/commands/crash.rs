@@ -153,7 +153,11 @@ pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resul
 
 /// Shows the stack of a Luma3DS crash dump (.dmp)
 #[poise::command(prefix_command)]
-pub async fn stack(ctx: crate::Context<'_>, link: Option<String>, size: Option<usize>) -> crate::Result<()> {
+pub async fn stack(
+    ctx: crate::Context<'_>,
+    link: Option<String>,
+    size: Option<usize>,
+) -> crate::Result<()> {
     //TODO: maybe make it possible for size to be given on its own?
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;
 

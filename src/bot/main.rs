@@ -11,6 +11,7 @@ use poise::{
 pub mod commands;
 pub mod error;
 pub mod event;
+pub mod helpers;
 
 #[derive(Debug)]
 pub struct Data;
@@ -18,7 +19,10 @@ type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 type Result<T> = std::result::Result<T, Error>;
 
-const BERTRAM_COLOR: i32 = 0x99ff33;
+const BERTRAM_COLOR: i32 = 0xbbf89b;
+
+pub static RUSTC_AT_BUILD: &str = env!("RUSTC_VER");
+pub static COMMIT_AT_BUILD: &str = env!("GIT_HASH");
 
 #[tokio::main]
 async fn main() {

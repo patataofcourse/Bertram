@@ -135,19 +135,19 @@ impl Symbols {
         self.megamix_end = Some(a.rodata);
 
         self.saltwater_end = if let Some(mut sw_syms) = self.saltwater() {
-                if let Some(Ok(a)) = sw_syms.find(|c| {
-                    if let Ok(c) = c {
-                        c.full_name() == "_TEXT_END"
-                    } else {
-                        false
-                    }
-                }) {
-                    Some(a.location)
+            if let Some(Ok(a)) = sw_syms.find(|c| {
+                if let Ok(c) = c {
+                    c.full_name() == "_TEXT_END"
                 } else {
-                    Err(anyhow!(
-                        "Saltwater symbols file doesn't contain _TEXT_END symbol"
-                    ))?
+                    false
                 }
+            }) {
+                Some(a.location)
+            } else {
+                Err(anyhow!(
+                    "Saltwater symbols file doesn't contain _TEXT_END symbol"
+                ))?
+            }
         } else {
             None
         };

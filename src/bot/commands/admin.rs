@@ -2,6 +2,8 @@ use std::{env, process};
 
 use poise::serenity_prelude::{self as serenity};
 
+use crate::helpers::embed;
+
 /// Kills the bot
 #[poise::command(prefix_command, category = "Admin", owners_only)]
 pub async fn kill(ctx: crate::Context<'_>) -> crate::Result<()> {
@@ -35,9 +37,60 @@ pub async fn recompile(ctx: crate::Context<'_>) -> crate::Result<()> {
     }
 }
 
-#[poise::command(prefix_command,category="Admin",owners_only)]
+#[poise::command(prefix_command, category = "Admin", owners_only)]
 pub async fn info(ctx: crate::Context<'_>) -> crate::Result<()> {
-    let rustc_ver = String::from_utf8(process::Command::new("rustc").arg("-V").output()?.stdout).unwrap();
-    ctx.send(|c| c.embed(|e| e.title("Bertram info").color(crate::BERTRAM_COLOR).field("rustc version", rustc_ver, false))).await?;
+    //TODO: parse nightlies to use format "nightly-YYYY-MM-DD (rust 1.XX)""
+    let rustc_ver = (|| {
+            String::from_utf8(
+                process::Command::new("rustc")
+                    .arg("-V")
+                    .output()
+                    .ok()?
+                    .stdout,
+            )
+            .ok()
+    })();
+    let commit = (|| {
+            String::from_utf8(
+                process::Command::new("git")
+                    .args(["rev-parse", "--short", "HEAD"])
+                    .output()
+                    .ok()?
+                    .stdout,
+            )
+            .ok()
+        
+    })();
+    embed(ctx, |e| {
+        e.title("Bertram info")
+            .color(crate::BERTRAM_COLOR)
+            .field(
+                "rustc version",
+                format!(
+                    "on build: {}\ncurrent: {}",
+                    crate::RUSTC_AT_BUILD,
+                    if let Some(c) = rustc_ver {
+                        c
+                    } else {
+                        "unavailable".to_string()
+                    }
+                ),
+                false,
+            )
+            .field(
+                "Bertram commit",
+                format!(
+                    "on build: {}\ncurrent: {}",
+                    crate::COMMIT_AT_BUILD,
+                    if let Some(c) = commit {
+                        c
+                    } else {
+                        "unavailable".to_string()
+                    }
+                ),
+                false,
+            )
+    })
+    .await?;
     Ok(())
 }
