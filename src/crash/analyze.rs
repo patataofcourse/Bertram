@@ -158,12 +158,32 @@ impl Symbols {
         let Some(megamix_end) = self.megamix_end else {Err(anyhow!("Tried to get a symbol with uninitialized bounds!"))?};
 
         if pos >= 0x00100000 && pos < megamix_end {
-            // TODO: if it's in megamix bounds, look through megamix symbols
-            let mut mm_syms = self.megamix();
-            todo!();
-        } else if let Some(mut sw_syms) = self.saltwater() && pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() {
-            // TODO: if it's in saltwater bounds, look through saltwater symbols if given
-            todo!();
+            let mm_syms = self.megamix();
+            let mut current_sym = (0, String::new());
+            for sym in mm_syms.take_while(|c| c.is_ok()) {
+                let sym = sym?;
+                if sym.location < current_sym.0 {
+                    panic!("This should never happen!")
+                }
+                if sym.location > pos {
+                    break
+                }
+                current_sym = (sym.location, sym.full_name())
+            }
+            Ok(Some(Function{reg_pos: pos, func_pos: current_sym.0, symbol: current_sym.1}))
+        } else if pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() && let Some(sw_syms) = self.saltwater() {
+            let mut current_sym = (0, String::new());
+            for sym in sw_syms.take_while(|c| c.is_ok()) {
+                let sym = sym?;
+                if sym.location < current_sym.0 {
+                    panic!("This should never happen!")
+                }
+                if sym.location > pos {
+                    break
+                }
+                current_sym = (sym.location, sym.full_name())
+            }
+            Ok(Some(Function{reg_pos: pos, func_pos: current_sym.0, symbol: current_sym.1}))
         } else {
             Ok(None)
         }
@@ -228,6 +248,7 @@ impl Symbols {
 }
 
 impl CrashAnalysis {
+    //TODO: impl Display for CrashAnalysis
     const DISPLAY_PC_IF_OOB: bool = false;
 
     pub fn from(crash: &CrashInfo) -> anyhow::Result<Self> {
@@ -272,7 +293,9 @@ impl CrashAnalysis {
             }
         };
         symbols.init_bounds(region)?;
-        symbols.find_symbol(crash.pc)?;
+
+        let pc = symbols.find_symbol(crash.pc)?;
+        println!("PC = {:#08x?}", pc);
         todo!();
     }
 }

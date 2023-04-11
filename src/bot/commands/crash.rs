@@ -59,6 +59,7 @@ pub async fn ctru(ctx: crate::Context<'_>, code: String) -> crate::Result<()> {
 pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;
 
+    //TODO: move formatting to main crate
     ctx.say(format!(
         concat!(
             "**Luma3DS crash dump:**\n",
@@ -190,6 +191,7 @@ pub async fn stack(
 pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = fetch_saltwater_dump(&ctx, link.as_deref()).await?;
 
+    //TODO: move formatting to main crate
     ctx.say(format!(
         concat!(
             "**Saltwater crash dump:**\n",
