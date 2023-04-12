@@ -41,25 +41,24 @@ pub async fn recompile(ctx: crate::Context<'_>) -> crate::Result<()> {
 pub async fn info(ctx: crate::Context<'_>) -> crate::Result<()> {
     //TODO: parse nightlies to use format "nightly-YYYY-MM-DD (rust 1.XX)""
     let rustc_ver = (|| {
-            String::from_utf8(
-                process::Command::new("rustc")
-                    .arg("-V")
-                    .output()
-                    .ok()?
-                    .stdout,
-            )
-            .ok()
+        String::from_utf8(
+            process::Command::new("rustc")
+                .arg("-V")
+                .output()
+                .ok()?
+                .stdout,
+        )
+        .ok()
     })();
     let commit = (|| {
-            String::from_utf8(
-                process::Command::new("git")
-                    .args(["rev-parse", "--short", "HEAD"])
-                    .output()
-                    .ok()?
-                    .stdout,
-            )
-            .ok()
-        
+        String::from_utf8(
+            process::Command::new("git")
+                .args(["rev-parse", "--short", "HEAD"])
+                .output()
+                .ok()?
+                .stdout,
+        )
+        .ok()
     })();
     embed(ctx, |e| {
         e.title("Bertram info")

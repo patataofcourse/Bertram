@@ -1,12 +1,14 @@
-use std::io::Cursor;
+use std::{io::Cursor, fmt::Debug};
 
+use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
 use poise::Context;
 
 use bertram::{
     crash::{
+        analyze::Symbols,
         luma::{CrashLuma, LumaProcessor},
-        saltwater::{CrashSWD, SWDType},
+        saltwater::{CrashSWD, Region, SWDType},
     },
     ctru::CtruError,
 };
@@ -266,5 +268,41 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
         dump.call_stack[4],
     ))
     .await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, category = "For code modders")]
+pub async fn symbol(
+    ctx: crate::Context<'_>,
+    sym: String,
+    region: Option<String>,
+) -> crate::Result<()> {
+    let region = match region
+        .map(|c| c.to_lowercase())
+        .as_ref()
+        .map(String::as_ref)
+    {
+        Some("us") | None => Region::US,
+        Some("eu") => Region::EU,
+        Some("jp") => Region::JP,
+        Some("kr") => Region::KR,
+        _ => Err(anyhow!("invalid region"))?,
+    };
+
+    let mut symbols = Symbols::from_paths(
+        format!("sym/rhm.{}.csv", format!("{region:?}").to_lowercase()),
+        "",
+    )?;
+
+    symbols.init_bounds(region)?;
+
+    let symbol = symbols.find_symbol(u32::from_str_radix(&sym, 16)?)?;
+
+    ctx.say(match symbol {
+        Some(c) => format!("Symbol found: {} ({:08x})", c.symbol, c.func_pos),
+        None => "Symbol couldn't be found".to_string(),
+    })
+    .await?;
+
     Ok(())
 }

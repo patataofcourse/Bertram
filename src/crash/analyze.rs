@@ -96,7 +96,7 @@ pub fn get_3gx_commit_hash(f: &mut (impl Read + Seek)) -> anyhow::Result<Option<
 }
 
 impl Symbols {
-    pub(crate) fn from_paths(
+    pub fn from_paths(
         megamix_path: impl AsRef<Path>,
         saltwater_path: impl AsRef<Path>,
     ) -> anyhow::Result<Self> {
