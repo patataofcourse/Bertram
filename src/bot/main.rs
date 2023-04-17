@@ -1,4 +1,4 @@
-#![feature(let_chains)]
+#![feature(let_chains, iterator_try_collect)]
 
 use std::collections::HashSet;
 use std::env;

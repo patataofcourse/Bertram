@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
-use csv::{DeserializeRecordsIter, Reader, Trim, Writer};
+use csv::{DeserializeRecordsIter, Position, Reader, Trim, Writer};
 use grep_matcher::{Captures, Matcher};
 use grep_regex::RegexMatcher;
 use serde::{Deserialize, Serialize};
@@ -102,6 +102,7 @@ impl Symbols {
     ) -> anyhow::Result<Self> {
         let mut builder = csv::ReaderBuilder::new();
         builder.trim(Trim::Fields);
+        builder.has_headers(true);
 
         Ok(Self {
             megamix_reader: builder.from_path(megamix_path)?,
@@ -160,8 +161,9 @@ impl Symbols {
         if pos >= 0x00100000 && pos < megamix_end {
             let mm_syms = self.megamix();
             let mut current_sym = (0, String::new());
-            for sym in mm_syms.take_while(|c| c.is_ok()) {
+            for sym in mm_syms {
                 let sym = sym?;
+                //println!("{}", sym.location);
                 if sym.location < current_sym.0 {
                     panic!("This should never happen!")
                 }
@@ -173,7 +175,7 @@ impl Symbols {
             Ok(Some(Function{reg_pos: pos, func_pos: current_sym.0, symbol: current_sym.1}))
         } else if pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() && let Some(sw_syms) = self.saltwater() {
             let mut current_sym = (0, String::new());
-            for sym in sw_syms.take_while(|c| c.is_ok()) {
+            for sym in sw_syms {
                 let sym = sym?;
                 if sym.location < current_sym.0 {
                     panic!("This should never happen!")
@@ -295,7 +297,20 @@ impl CrashAnalysis {
         symbols.init_bounds(region)?;
 
         let pc = symbols.find_symbol(crash.pc)?;
+        let lr = symbols.find_symbol(crash.lr)?;
+        let stack = crash
+            .call_stack
+            .as_ref()
+            .map(|call_stack| call_stack.iter().map(|c| symbols.find_symbol(*c)));
         println!("PC = {:#08x?}", pc);
+        println!("LR = {:#08x?}", lr);
+        println!(
+            "call stack = {:08x?} / {:#08x?}",
+            crash.call_stack,
+            stack
+                .map(|mut c| c.try_collect::<Vec<_>>())
+                .unwrap_or(Ok(Vec::new()))?
+        );
         todo!();
     }
 }
