@@ -95,3 +95,21 @@ pub struct CrashInfo {
     pub stack: Option<Vec<u8>>,
     pub call_stack: Option<Vec<u32>>,
 }
+
+pub const FAULT_STATUS_SOURCES: &[(u32, &str)] = &[
+    (0b1, "Alignment"),
+    (0b100, "Instruction cache maintenance operation fault"),
+    (0b1100, "External Abort on translation - First-level"),
+    (0b1110, "External Abort on translation - Second-level"),
+    (0b101, "Translation - Section"),
+    (0b111, "Translation - Page"),
+    (0b11, "Access bit - Section"),
+    (0b110, "Access bit - Page"),
+    (0b1001, "Domain - Section"),
+    (0b1011, "Domain - Page"),
+    (0b1101, "Permission - Section"),
+    (0b1111, "Permission - Page"),
+    (0b1000, "Precise External Abort"),
+    (0b10110, "Imprecise External Abort"),
+    (0b10, "Debug event"),
+];

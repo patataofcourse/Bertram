@@ -1,4 +1,4 @@
-use std::{io::Cursor, fmt::Debug};
+use std::io::Cursor;
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
@@ -9,6 +9,7 @@ use bertram::{
         analyze::Symbols,
         luma::{CrashLuma, LumaProcessor},
         saltwater::{CrashSWD, Region, SWDType},
+        ExcType, FAULT_STATUS_SOURCES,
     },
     ctru::CtruError,
 };
@@ -67,8 +68,8 @@ pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resul
             "**Luma3DS crash dump:**\n",
             "```Processor: {}\n",
             "Exception type: {}\n",
-            "Fault status: ...\n", //TODO
-            "{}\n",
+            "{}",
+            "{}",
             "\n",
             "Register dump:\n",
             "r0      {:08x}    r1      {:08x}\n",
@@ -87,12 +88,31 @@ pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resul
         ),
         dump.processor,
         dump.exception_type,
+        if let ExcType::DataAbort | ExcType::PrefetchAbort = dump.exception_type {
+            let fault = if dump.exception_type == ExcType::DataAbort {
+                let dfsr = dump.registers.get(17).unwrap_or(&0);
+                (dfsr & 0xf) + ((dfsr >> 10) & 1)
+            } else {
+                let ifsr = dump.registers.get(18).unwrap_or(&0);
+                ifsr & 0xf
+            };
+            format!(
+                "Fault status: {}\n",
+                FAULT_STATUS_SOURCES
+                    .iter()
+                    .find(|(k, _)| *k == fault)
+                    .unwrap_or(&(0, "Invalid"))
+                    .1
+            )
+        } else {
+            String::new()
+        },
         if !dump.extra.is_empty() {
             if let LumaProcessor::Arm11(_) = dump.processor {
                 let info = dump.get_title_info().unwrap();
-                format!("Current process: {} ({:016X})", info.0, info.1)
+                format!("Current process: {} ({:016X})\n", info.0, info.1)
             } else {
-                "<ARM9 memory embedded in the crash>".to_string()
+                "<ARM9 memory embedded in the crash>\n".to_string()
             }
         } else {
             String::new()
@@ -200,7 +220,7 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
             "```Region: {}\n",
             "Version: {}\n",
             "Exception type: {}\n",
-            "Fault status: ...\n", //TODO
+            "{}",
             "\nRegister dump:\n",
             "{}",
             "{}",
@@ -217,6 +237,25 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
         dump.region,
         dump.version,
         dump.exception_type,
+        if let ExcType::DataAbort | ExcType::PrefetchAbort = dump.exception_type {
+            let fault = if dump.exception_type == ExcType::DataAbort {
+                let dfsr = dump.status_a;
+                (dfsr & 0xf) + ((dfsr >> 10) & 1)
+            } else {
+                let ifsr = dump.status_b;
+                ifsr & 0xf
+            };
+            format!(
+                "Fault status: {}\n",
+                FAULT_STATUS_SOURCES
+                    .iter()
+                    .find(|(k, _)| *k == fault)
+                    .unwrap_or(&(0, "Invalid"))
+                    .1
+            )
+        } else {
+            String::new()
+        },
         if dump.crash_type == SWDType::Extended {
             let regs = dump.registers.unwrap();
             format!(
