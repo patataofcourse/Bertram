@@ -351,7 +351,7 @@ pub async fn symbol(
 #[poise::command(prefix_command, category = "For code modders")]
 pub async fn analyze(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
     let dump = match fetch_luma_dump(&ctx, link.as_deref()).await {
-        Ok(c) => c.as_generic(Some(5)),
+        Ok(c) => c.as_generic(Some(5))?,
         Err(_) => fetch_saltwater_dump(&ctx, link.as_deref())
             .await?
             .as_generic(),

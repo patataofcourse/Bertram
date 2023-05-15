@@ -5,8 +5,11 @@ use std::{
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
+use csv::Trim;
 
 use crate::crash::{CrashInfo, ExcType};
+
+use super::{analyze::CsvBounds, saltwater::Region};
 
 #[derive(Debug, Clone)]
 pub struct LumaVersion {
@@ -134,12 +137,12 @@ impl CrashLuma {
         })
     }
 
-    pub fn as_generic(self, call_stack_size: Option<usize>) -> CrashInfo {
+    pub fn as_generic(self, call_stack_size: Option<usize>) -> anyhow::Result<CrashInfo> {
         let r = Some(self.registers[0..13].try_into().unwrap());
-        CrashInfo {
+        Ok(CrashInfo {
             call_stack: match call_stack_size {
                 None | Some(0) => None,
-                Some(c) => Some(self.get_call_stack(c)),
+                Some(c) => Some(self.get_call_stack(c)?),
             },
             engine: super::ModdingEngine::RHMPatch,
             r,
@@ -154,21 +157,30 @@ impl CrashLuma {
             fpinst: self.registers.get(21).copied(),
             fpinst2: self.registers.get(22).copied(),
             stack: Some(self.stack),
-        }
+        })
     }
 
-    pub fn get_call_stack(&self, size: usize) -> Vec<u32> {
+    pub fn get_call_stack(&self, size: usize) -> anyhow::Result<Vec<u32>> {
         let mut call_stack = vec![];
         let mut i = 0;
         while i < self.stack.len() && call_stack.len() < size {
             let val = u32::from_le_bytes(self.stack[i..i + 4].try_into().unwrap());
-            // TODO: get start and end of sections
-            if (0x00100000..0x04000000).contains(&val) || (0x07000100..0x08000000).contains(&val) {
+
+            let mut builder = csv::ReaderBuilder::new();
+            builder.trim(Trim::Fields);
+
+            let mut megamix_bounds = builder.from_path("sym/bounds.csv")?;
+            let Some(Ok(a)) = megamix_bounds.deserialize::<CsvBounds>().find(|c| {
+                let Ok(bound) = c else { return false };
+                Region::US.matches(&bound.version)
+            }) else { Err(anyhow!("Bounds file doesn't include US region"))? };
+
+            if (0x00100000..a.rodata).contains(&val) {
                 call_stack.push(val);
             }
             i += 4;
         }
-        call_stack
+        Ok(call_stack)
     }
 
     pub fn get_title_info(&self) -> Option<(String, u64)> {
