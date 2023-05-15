@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
-use csv::{DeserializeRecordsIter, Reader, Trim, Writer};
+use csv::{DeserializeRecordsIter, Position, Reader, Trim, Writer};
 use grep_matcher::{Captures, Matcher};
 use grep_regex::RegexMatcher;
 use serde::{Deserialize, Serialize};
@@ -86,7 +86,6 @@ pub struct CsvBounds {
 
 type SymbolIter<'a> = DeserializeRecordsIter<'a, File, CsvSymbol>;
 
-//FIXME: return to the beginning of the file whenever getting megamix() or saltwater()
 pub struct Symbols {
     megamix_reader: Reader<File>,
     saltwater_reader: Option<Reader<File>>,
@@ -132,12 +131,19 @@ impl Symbols {
         })
     }
 
-    pub fn megamix(&mut self) -> SymbolIter {
-        self.megamix_reader.deserialize()
+    pub fn megamix(&mut self) -> anyhow::Result<SymbolIter> {
+        self.megamix_reader.reset()?;
+        Ok(self.megamix_reader.deserialize())
     }
 
-    pub fn saltwater(&mut self) -> Option<SymbolIter> {
-        self.saltwater_reader.as_mut().map(|c| c.deserialize())
+    pub fn saltwater(&mut self) -> anyhow::Result<Option<SymbolIter>> {
+        self.saltwater_reader
+            .as_mut()
+            .map(|c| {
+                c.reset()?;
+                Ok(Some(c.deserialize()))
+            })
+            .unwrap_or(Ok(None))
     }
 
     pub fn init_bounds(&mut self, region: Region) -> anyhow::Result<()> {
@@ -151,7 +157,7 @@ impl Symbols {
         }) else { Err(anyhow!("Bounds file doesn't include {:?} region", region))? };
         self.megamix_end = Some(a.rodata);
 
-        self.saltwater_end = if let Some(mut sw_syms) = self.saltwater() {
+        self.saltwater_end = if let Some(mut sw_syms) = self.saltwater()? {
             if let Some(Ok(a)) = sw_syms.find(|c| {
                 if let Ok(c) = c {
                     c.full_name() == "_TEXT_END"
@@ -175,7 +181,7 @@ impl Symbols {
         let Some(megamix_end) = self.megamix_end else {Err(anyhow!("Tried to get a symbol with uninitialized bounds!"))?};
 
         if pos >= 0x00100000 && pos < megamix_end {
-            let mm_syms = self.megamix();
+            let mm_syms = self.megamix()?;
             let mut current_sym: Option<(u32, String)> = None;
             for sym in mm_syms {
                 let sym = sym?;
@@ -188,7 +194,7 @@ impl Symbols {
                 current_sym = Some((sym.location, sym.full_name()))
             }
             Ok(current_sym.map(|c|Function{reg_pos: pos, func_pos: c.0, symbol: c.1}))
-        } else if pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() && let Some(sw_syms) = self.saltwater() {
+        } else if pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() && let Some(sw_syms) = self.saltwater()? {
             let mut current_sym: Option<(u32, String)> = None;
             for sym in sw_syms {
                 let sym = sym?;
@@ -399,5 +405,19 @@ impl Display for CrashAnalysis {
                 out
             }
         )
+    }
+}
+
+trait SeekToStart: Sized {
+    fn reset(&mut self) -> anyhow::Result<()>;
+}
+
+impl SeekToStart for Reader<File> {
+    fn reset(&mut self) -> anyhow::Result<()> {
+        let mut position = Position::new();
+        position.set_byte(0);
+        self.seek(position)?;
+        self.read_record(&mut csv::StringRecord::new())?;
+        Ok(())
     }
 }
