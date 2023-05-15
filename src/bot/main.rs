@@ -41,11 +41,13 @@ async fn main() {
                 commands::admin::kill(),
                 commands::admin::recompile(),
                 commands::admin::info(),
-                // crash
-                commands::crash::luma(),
-                commands::crash::saltwater(),
+                // crash helpers
                 commands::crash::ctru(),
                 commands::crash::symbol(),
+                // crash - for coders
+                commands::crash::luma(),
+                commands::crash::saltwater(),
+                commands::crash::analyze(),
             ],
             on_error: |err| Box::pin(on_error(err)),
             owners: {

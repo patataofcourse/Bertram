@@ -10,7 +10,7 @@ You'll need to add Megamix symbols files in the `sym` folder. An example (exampl
 Symbols for all Saltwater stable versions will be included in the repository. For debug builds, please store them under `sym/sw._[COMMIT_HASH].csv`
 
 ## Rust version
-Bertram requires nightly Rust due to let-chains and try_collect not being stable yet. Once let-chains and try_collect are in mainline Rust, I'll look into supporting it again.
+Bertram requires nightly Rust due to let-chains and try_collect not being stable yet. Once those are in stable Rust, I'll look into supporting it again.
 
 As of the time of writing this readme, the latest working nightly is `nightly-2023-04-17`, although newer nightlies will likely work as well. Regarding older nightlies - no clue.
 

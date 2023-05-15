@@ -273,6 +273,7 @@ impl Symbols {
 impl CrashAnalysis {
     const DISPLAY_PC_IF_OOB: bool = false;
     const DISPLAY_LR_IF_OOB: bool = false;
+    const DISPLAY_CALL_STACK_IF_OOB: bool = true;
 
     pub fn from(crash: &CrashInfo) -> anyhow::Result<Self> {
         let region;
@@ -400,11 +401,88 @@ impl Display for CrashAnalysis {
                             c.symbol,
                             c.func_pos
                         );
+                    } else if Self::DISPLAY_CALL_STACK_IF_OOB {
+                        out += &format!(
+                            "  Call stack {} ({:08x}): out of bounds!\n",
+                            i + 1,
+                            elmt.get_raw_pos()
+                        )
                     }
                 }
                 out
             }
         )
+    }
+}
+
+#[cfg(feature = "bot")]
+use serenity::builder::CreateEmbed;
+
+#[cfg(feature = "bot")]
+impl CrashAnalysis {
+    pub fn as_serenity_embed<'a>(&self, embed: &'a mut CreateEmbed) -> &'a mut CreateEmbed {
+        embed
+            .title(format!(
+                "Crash analysis for {}:",
+                match &self.ctype {
+                    ModdingEngine::RHMPatch => "RHMPatch".to_string(),
+                    ModdingEngine::SpiceRack(_, ver, region) =>
+                        format!("Saltwater {ver} ({region})"),
+                }
+            ))
+            .description(format!(
+                "@ {:08x} -> {:08x} (@ PC -> LR)\n\n",
+                self.pc.get_raw_pos(),
+                self.lr.get_raw_pos()
+            ))
+            .field(
+                "Call stack",
+                format!(
+                    "{}{}{}",
+                    if let MaybeFunction::Function(c) = &self.pc {
+                        format!(
+                            "PC ({:08x}): {} ({:08x})\n",
+                            c.reg_pos, c.symbol, c.func_pos
+                        )
+                    } else if Self::DISPLAY_PC_IF_OOB {
+                        format!("PC ({:08x}): out of bounds!\n", self.pc.get_raw_pos())
+                    } else {
+                        String::new()
+                    },
+                    if let MaybeFunction::Function(c) = &self.lr {
+                        format!(
+                            "LR ({:08x}): {} ({:08x})\n",
+                            c.reg_pos, c.symbol, c.func_pos
+                        )
+                    } else if Self::DISPLAY_LR_IF_OOB {
+                        format!("LR ({:08x}): out of bounds!\n", self.lr.get_raw_pos())
+                    } else {
+                        String::new()
+                    },
+                    {
+                        let mut out = String::new();
+                        for (i, elmt) in self.call_stack.iter().enumerate() {
+                            if let MaybeFunction::Function(c) = elmt {
+                                out += &format!(
+                                    "Call stack {} ({:08x}): {} ({:08x})\n",
+                                    i + 1,
+                                    c.reg_pos,
+                                    c.symbol,
+                                    c.func_pos
+                                );
+                            } else if Self::DISPLAY_CALL_STACK_IF_OOB {
+                                out += &format!(
+                                    "Call stack {} ({:08x}): out of bounds!\n",
+                                    i + 1,
+                                    elmt.get_raw_pos()
+                                )
+                            }
+                        }
+                        out
+                    }
+                ),
+                false,
+            )
     }
 }
 

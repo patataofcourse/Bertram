@@ -6,13 +6,15 @@ use poise::Context;
 
 use bertram::{
     crash::{
-        analyze::Symbols,
+        analyze::{CrashAnalysis, Symbols},
         luma::{CrashLuma, LumaProcessor},
         saltwater::{CrashSWD, Region, SWDType},
         ExcType, FAULT_STATUS_SOURCES,
     },
     ctru::CtruError,
 };
+
+use crate::helpers::embed;
 
 pub async fn fetch_luma_dump(
     ctx: &crate::Context<'_>,
@@ -343,5 +345,21 @@ pub async fn symbol(
     })
     .await?;
 
+    Ok(())
+}
+
+#[poise::command(prefix_command, category = "For code modders")]
+pub async fn analyze(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+    let dump = match fetch_luma_dump(&ctx, link.as_deref()).await {
+        Ok(c) => c.as_generic(Some(5)),
+        Err(_) => fetch_saltwater_dump(&ctx, link.as_deref())
+            .await?
+            .as_generic(),
+    };
+    let analysis = CrashAnalysis::from(&dump)?;
+    embed(ctx, |e| {
+        analysis.as_serenity_embed(e).color(crate::BERTRAM_COLOR)
+    })
+    .await?;
     Ok(())
 }
