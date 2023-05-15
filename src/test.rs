@@ -42,7 +42,7 @@ fn main() -> anyhow::Result<()> {
     drop(out);
     */
 
-    CrashAnalysis::from(&generic_swd)?;
+    println!("{}", CrashAnalysis::from(&generic_swd)?);
 
     Ok(())
 }

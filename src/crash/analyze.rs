@@ -1,5 +1,6 @@
 use std::{
     ffi::CString,
+    fmt::Display,
     fs::File,
     io::{Read, Seek, SeekFrom, Write},
     path::Path,
@@ -7,7 +8,7 @@ use std::{
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
-use csv::{DeserializeRecordsIter, Position, Reader, Trim, Writer};
+use csv::{DeserializeRecordsIter, Reader, Trim, Writer};
 use grep_matcher::{Captures, Matcher};
 use grep_regex::RegexMatcher;
 use serde::{Deserialize, Serialize};
@@ -20,11 +21,10 @@ use crate::crash::{
 
 #[derive(Debug, Clone)]
 pub struct CrashAnalysis {
-    pub oob_pc: bool,
     pub ctype: ModdingEngine,
-    pub pc: Function,
-    pub lr: Function,
-    pub call_stack: Vec<Function>,
+    pub pc: MaybeFunction,
+    pub lr: MaybeFunction,
+    pub call_stack: Vec<MaybeFunction>,
 }
 
 #[derive(Debug, Clone)]
@@ -32,6 +32,21 @@ pub struct Function {
     pub reg_pos: u32,
     pub func_pos: u32,
     pub symbol: String,
+}
+
+#[derive(Debug, Clone)]
+pub enum MaybeFunction {
+    Function(Function),
+    Oob(u32),
+}
+
+impl MaybeFunction {
+    pub fn get_raw_pos(&self) -> u32 {
+        match self {
+            MaybeFunction::Function(c) => c.reg_pos,
+            MaybeFunction::Oob(pos) => *pos,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -71,6 +86,7 @@ pub struct CsvBounds {
 
 type SymbolIter<'a> = DeserializeRecordsIter<'a, File, CsvSymbol>;
 
+//FIXME: return to the beginning of the file whenever getting megamix() or saltwater()
 pub struct Symbols {
     megamix_reader: Reader<File>,
     saltwater_reader: Option<Reader<File>>,
@@ -121,7 +137,7 @@ impl Symbols {
     }
 
     pub fn saltwater(&mut self) -> Option<SymbolIter> {
-        Some(self.saltwater_reader.as_mut()?.deserialize())
+        self.saltwater_reader.as_mut().map(|c| c.deserialize())
     }
 
     pub fn init_bounds(&mut self, region: Region) -> anyhow::Result<()> {
@@ -160,32 +176,31 @@ impl Symbols {
 
         if pos >= 0x00100000 && pos < megamix_end {
             let mm_syms = self.megamix();
-            let mut current_sym = (0, String::new());
+            let mut current_sym: Option<(u32, String)> = None;
             for sym in mm_syms {
                 let sym = sym?;
-                //println!("{}", sym.location);
-                if sym.location < current_sym.0 {
-                    panic!("This should never happen!")
+                if let Some(c) = &current_sym && sym.location < c.0 {
+                    unreachable!("This should never happen!")
                 }
                 if sym.location > pos {
                     break
                 }
-                current_sym = (sym.location, sym.full_name())
+                current_sym = Some((sym.location, sym.full_name()))
             }
-            Ok(Some(Function{reg_pos: pos, func_pos: current_sym.0, symbol: current_sym.1}))
+            Ok(current_sym.map(|c|Function{reg_pos: pos, func_pos: c.0, symbol: c.1}))
         } else if pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() && let Some(sw_syms) = self.saltwater() {
-            let mut current_sym = (0, String::new());
+            let mut current_sym: Option<(u32, String)> = None;
             for sym in sw_syms {
                 let sym = sym?;
-                if sym.location < current_sym.0 {
-                    panic!("This should never happen!")
+                if let Some(c) = &current_sym && sym.location < c.0 {
+                    unreachable!("This should never happen!")
                 }
                 if sym.location > pos {
                     break
                 }
-                current_sym = (sym.location, sym.full_name())
+                current_sym = Some((sym.location, sym.full_name()))
             }
-            Ok(Some(Function{reg_pos: pos, func_pos: current_sym.0, symbol: current_sym.1}))
+            Ok(current_sym.map(|c|Function{reg_pos: pos, func_pos: c.0, symbol: c.1}))
         } else {
             Ok(None)
         }
@@ -250,8 +265,8 @@ impl Symbols {
 }
 
 impl CrashAnalysis {
-    //TODO: impl Display for CrashAnalysis
     const DISPLAY_PC_IF_OOB: bool = false;
+    const DISPLAY_LR_IF_OOB: bool = false;
 
     pub fn from(crash: &CrashInfo) -> anyhow::Result<Self> {
         let region;
@@ -296,21 +311,93 @@ impl CrashAnalysis {
         };
         symbols.init_bounds(region)?;
 
-        let pc = symbols.find_symbol(crash.pc)?;
-        let lr = symbols.find_symbol(crash.lr)?;
-        let stack = crash
+        let pc = if let Some(c) = symbols.find_symbol(crash.pc)? {
+            MaybeFunction::Function(c)
+        } else {
+            MaybeFunction::Oob(crash.pc)
+        };
+        let lr = if let Some(c) = symbols.find_symbol(crash.lr)? {
+            MaybeFunction::Function(c)
+        } else {
+            MaybeFunction::Oob(crash.lr)
+        };
+        let call_stack = crash
             .call_stack
             .as_ref()
-            .map(|call_stack| call_stack.iter().map(|c| symbols.find_symbol(*c)));
-        println!("PC = {:#08x?}", pc);
-        println!("LR = {:#08x?}", lr);
-        println!(
-            "call stack = {:08x?} / {:#08x?}",
-            crash.call_stack,
-            stack
-                .map(|mut c| c.try_collect::<Vec<_>>())
-                .unwrap_or(Ok(Vec::new()))?
-        );
-        todo!();
+            .unwrap_or(&vec![])
+            .iter()
+            .map(|pos| {
+                symbols.find_symbol(*pos).map(|c| {
+                    if let Some(c) = c {
+                        MaybeFunction::Function(c)
+                    } else {
+                        MaybeFunction::Oob(*pos)
+                    }
+                })
+            })
+            .try_collect()?;
+        Ok(Self {
+            pc,
+            lr,
+            call_stack,
+            ctype: crash.engine.clone(),
+        })
+    }
+}
+
+impl Display for CrashAnalysis {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            concat!(
+                "Crash analysis for {}:\n",
+                "@ {:08x} -> {:08x} (@ PC -> LR)\n\n",
+                "Call stack:\n",
+                "{}",
+                "{}",
+                "{}",
+            ),
+            match &self.ctype {
+                ModdingEngine::RHMPatch => "RHMPatch".to_string(),
+                ModdingEngine::SpiceRack(_, ver, region) => format!("Saltwater {ver} ({region})"),
+            },
+            self.pc.get_raw_pos(),
+            self.lr.get_raw_pos(),
+            if let MaybeFunction::Function(c) = &self.pc {
+                format!(
+                    "  PC ({:08x}): {} ({:08x})\n",
+                    c.reg_pos, c.symbol, c.func_pos
+                )
+            } else if Self::DISPLAY_PC_IF_OOB {
+                format!("  PC ({:08x}): out of bounds!\n", self.pc.get_raw_pos())
+            } else {
+                String::new()
+            },
+            if let MaybeFunction::Function(c) = &self.lr {
+                format!(
+                    "  LR ({:08x}): {} ({:08x})\n",
+                    c.reg_pos, c.symbol, c.func_pos
+                )
+            } else if Self::DISPLAY_LR_IF_OOB {
+                format!("  LR ({:08x}): out of bounds!\n", self.lr.get_raw_pos())
+            } else {
+                String::new()
+            },
+            {
+                let mut out = String::new();
+                for (i, elmt) in self.call_stack.iter().enumerate() {
+                    if let MaybeFunction::Function(c) = elmt {
+                        out += &format!(
+                            "  Call stack {} ({:08x}): {} ({:08x})\n",
+                            i + 1,
+                            c.reg_pos,
+                            c.symbol,
+                            c.func_pos
+                        );
+                    }
+                }
+                out
+            }
+        )
     }
 }
