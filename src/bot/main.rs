@@ -27,7 +27,7 @@ pub static COMMIT_AT_BUILD: &str = env!("GIT_HASH");
 
 async fn prefix(ctx: PartialContext<'_>) -> Result<Option<String>> {
     if ctx.guild_id == Some(serenity::GuildId(277545487375007744)) {
-        Ok(Some(".".to_string()))
+        Ok(Some("-".to_string()))
     } else {
         Ok(Some("!".to_string()))
     }
