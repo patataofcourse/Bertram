@@ -49,6 +49,7 @@ pub async fn on_error(
             ))
             .await?;
         }
+        FrameworkError::CommandCheckFailed { error: None, ctx } => {}
         e => {
             let Some(ctx) = e.ctx() else {
             println!("{}", e); return Ok(())

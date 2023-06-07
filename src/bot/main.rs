@@ -17,6 +17,7 @@ pub mod helpers;
 pub struct Data;
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
+type PartialContext<'a> = poise::PartialContext<'a, Data, Error>;
 type Result<T> = std::result::Result<T, Error>;
 
 const BERTRAM_COLOR: i32 = 0xbbf89b;
@@ -24,13 +25,21 @@ const BERTRAM_COLOR: i32 = 0xbbf89b;
 pub static RUSTC_AT_BUILD: &str = env!("RUSTC_VER");
 pub static COMMIT_AT_BUILD: &str = env!("GIT_HASH");
 
+async fn prefix(ctx: PartialContext<'_>) -> Result<Option<String>> {
+    if ctx.guild_id == Some(serenity::GuildId(277545487375007744)) {
+        Ok(Some(".".to_string()))
+    } else {
+        Ok(Some("!".to_string()))
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let framework = Framework::builder()
         .options(FrameworkOptions {
             prefix_options: PrefixFrameworkOptions {
-                prefix: Some("!".into()),
                 mention_as_prefix: true,
+                dynamic_prefix: Some(|ctx| Box::pin(prefix(ctx))),
                 ..Default::default()
             },
             commands: vec![
@@ -65,11 +74,14 @@ async fn main() {
             // remove this after SpiceRack alpha is over
             command_check: Some(|c: Context| {
                 Box::pin(async move {
-                    Ok([1088507265759314020].contains(&c.channel_id().0)
-                        || [1012766391897698394].contains(&match c.guild_id() {
-                            Some(c) => c.0,
-                            None => 0,
-                        }))
+                    Ok(
+                        [1088507265759314020, 856358616469864489, 1112147857596760124]
+                            .contains(&c.channel_id().0)
+                            || [1012766391897698394].contains(&match c.guild_id() {
+                                Some(c) => c.0,
+                                None => 0,
+                            }),
+                    )
                 })
             }),
             reply_callback: Some(|_, reply| {
