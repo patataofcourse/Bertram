@@ -3,6 +3,7 @@ use std::fmt::Display;
 pub mod analyze;
 pub mod luma;
 pub mod saltwater;
+pub mod solve;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExcType {
@@ -75,6 +76,15 @@ pub enum ModdingEngine {
     SpiceRack(saltwater::SWDType, saltwater::SWDVersion, saltwater::Region),
 }
 
+impl ModdingEngine {
+    pub fn region(&self) -> saltwater::Region {
+        match self {
+            Self::RHMPatch => saltwater::Region::US,
+            Self::SpiceRack(_, _, region) => *region,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct CrashInfo {
     pub engine: ModdingEngine,
@@ -94,6 +104,12 @@ pub struct CrashInfo {
 
     pub stack: Option<Vec<u8>>,
     pub call_stack: Option<Vec<u32>>,
+}
+
+impl CrashInfo {
+    pub fn region(&self) -> saltwater::Region {
+        self.engine.region()
+    }
 }
 
 pub const FAULT_STATUS_SOURCES: &[(u32, &str)] = &[

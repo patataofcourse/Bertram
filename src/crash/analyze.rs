@@ -27,6 +27,12 @@ pub struct CrashAnalysis {
     pub call_stack: Vec<MaybeFunction>,
 }
 
+impl CrashAnalysis {
+    pub fn region(&self) -> Region {
+        self.ctype.region()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Function {
     pub reg_pos: u32,
