@@ -10,7 +10,8 @@ use bertram::{
     crash::{
         analyze::{self, CrashAnalysis, Symbols},
         luma::CrashLuma,
-        saltwater::CrashSWD, solve::SolveDiagnosis,
+        saltwater::CrashSWD,
+        solve::SolveDiagnosis,
     },
     ctru::CtruError,
 };
@@ -30,17 +31,6 @@ fn main() -> anyhow::Result<()> {
     //let generic_swd = swd_crash.as_generic();
 
     //println!("{:#X?}", generic_swd);
-
-    /*
-    let mut _3gx = File::open("../SpiceRack/Saltwater/Saltwater.3gx")?;
-    let mut out = File::create(format!(
-        "sym/sw._{}.csv",
-        analyze::get_3gx_commit_hash(&mut _3gx)?.unwrap()
-    ))?;
-
-    Symbols::ctrplugin_symbols_to_csv(&mut _3gx, &mut out, true)?;
-    drop(out);
-    */
 
     println!("{:?}", SolveDiagnosis::find_matches(&generic_luma));
 

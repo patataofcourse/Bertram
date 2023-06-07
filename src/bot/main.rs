@@ -50,6 +50,7 @@ async fn main() {
                 commands::admin::kill(),
                 commands::admin::recompile(),
                 commands::admin::info(),
+                commands::crash::symbolgen(),
                 // crash helpers
                 commands::crash::ctru(),
                 commands::crash::symbol(),

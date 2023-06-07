@@ -1,4 +1,4 @@
-use std::io::Cursor;
+use std::{fs::File, io::Cursor};
 
 use anyhow::anyhow;
 use bytestream::{ByteOrder::LittleEndian as LE, StreamReader};
@@ -6,7 +6,7 @@ use poise::Context;
 
 use bertram::{
     crash::{
-        analyze::{CrashAnalysis, Symbols},
+        analyze::{self, CrashAnalysis, Symbols},
         luma::{CrashLuma, LumaProcessor},
         saltwater::{CrashSWD, Region, SWDType},
         ExcType, FAULT_STATUS_SOURCES,
@@ -361,5 +361,26 @@ pub async fn analyze(ctx: crate::Context<'_>, link: Option<String>) -> crate::Re
         analysis.as_serenity_embed(e).color(crate::BERTRAM_COLOR)
     })
     .await?;
+    Ok(())
+}
+
+/// Generate Saltwater symbols for debug builds
+#[poise::command(prefix_command, category = "Admin", owners_only)]
+pub async fn symbolgen(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+    let _3gx = if let Context::Prefix(c) = ctx && !c.msg.attachments.is_empty() {
+        c.msg.attachments[0].download().await?
+    } else {
+        reqwest::get(link.ok_or("No file given")?)
+            .await?
+            .bytes()
+            .await?
+            .into()
+    };
+    let hash = analyze::get_3gx_commit_hash(&mut Cursor::new(_3gx.as_slice()))?.unwrap();
+    let mut out = File::create(format!("sym/sw._{hash}.csv",))?;
+
+    Symbols::ctrplugin_symbols_to_csv(&mut Cursor::new(_3gx.as_slice()), &mut out, true)?;
+    ctx.say(format!("Wrote symbols for commit {hash}!",))
+        .await?;
     Ok(())
 }
