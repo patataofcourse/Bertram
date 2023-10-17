@@ -58,6 +58,8 @@ async fn main() {
                 commands::crash::luma(),
                 commands::crash::saltwater(),
                 commands::crash::analyze(),
+                // tags / FAQs
+                commands::tags::docs(),
             ],
             on_error: |err| Box::pin(on_error(err)),
             owners: {

@@ -160,7 +160,9 @@ impl Symbols {
         let Some(Ok(a)) = megamix_bounds.deserialize::<CsvBounds>().find(|c| {
             let Ok(bound) = c else { return false };
             region.matches(&bound.version)
-        }) else { Err(anyhow!("Bounds file doesn't include {:?} region", region))? };
+        }) else {
+            Err(anyhow!("Bounds file doesn't include {:?} region", region))?
+        };
         self.megamix_end = Some(a.rodata);
 
         self.saltwater_end = if let Some(mut sw_syms) = self.saltwater()? {
@@ -184,7 +186,9 @@ impl Symbols {
     }
 
     pub fn find_symbol(&mut self, pos: u32) -> anyhow::Result<Option<Function>> {
-        let Some(megamix_end) = self.megamix_end else {Err(anyhow!("Tried to get a symbol with uninitialized bounds!"))?};
+        let Some(megamix_end) = self.megamix_end else {
+            Err(anyhow!("Tried to get a symbol with uninitialized bounds!"))?
+        };
 
         if pos >= 0x00100000 && pos < megamix_end {
             let mm_syms = self.megamix()?;

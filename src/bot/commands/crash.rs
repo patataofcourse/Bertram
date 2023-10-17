@@ -53,7 +53,9 @@ pub async fn fetch_saltwater_dump(
 /// Analyzes an ErrDisp / ctru error code
 #[poise::command(prefix_command, category = "Helpers")]
 pub async fn ctru(ctx: crate::Context<'_>, code: String) -> crate::Result<()> {
-    let Ok(code) = u32::from_str_radix(code.trim_start_matches("0x"), 16) else {Err("Not a valid hex number")?};
+    let Ok(code) = u32::from_str_radix(code.trim_start_matches("0x"), 16) else {
+        Err("Not a valid hex number")?
+    };
     ctx.say(format!("```{}```", CtruError::from_code(code)))
         .await?;
     Ok(())

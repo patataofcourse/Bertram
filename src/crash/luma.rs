@@ -173,7 +173,9 @@ impl CrashLuma {
             let Some(Ok(a)) = megamix_bounds.deserialize::<CsvBounds>().find(|c| {
                 let Ok(bound) = c else { return false };
                 Region::US.matches(&bound.version)
-            }) else { Err(anyhow!("Bounds file doesn't include US region"))? };
+            }) else {
+                Err(anyhow!("Bounds file doesn't include US region"))?
+            };
 
             if (0x00100000..a.rodata).contains(&val) {
                 call_stack.push(val);

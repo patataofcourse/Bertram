@@ -55,8 +55,9 @@ pub async fn on_error(
         } => {}
         e => {
             let Some(ctx) = e.ctx() else {
-            println!("{}", e); return Ok(())
-        };
+                println!("{}", e);
+                return Ok(());
+            };
             ctx.say(format!("Error happened:```\n{}```", e)).await?;
         }
     }
