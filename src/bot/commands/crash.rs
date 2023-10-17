@@ -227,7 +227,7 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
             "{}",
             "\nRegister dump:\n",
             "{}",
-            "{}",
+            "lr      {:08x}    pc      {:08x}\n{}",
             "\nCall stack (wip):\n",
             // TODO: fetch symbols
             // TODO: make this dependent on CALL_STACK_SIZE if possible
@@ -291,19 +291,16 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
         } else {
             "".to_string()
         },
-        format!(
-            "lr      {:08x}    pc      {:08x}\n{}",
-            dump.lr,
-            dump.pc,
-            match dump.exception_type.status_reg_names() {
-                [None, _] => "".to_string(),
-                [Some(c), None] => format!("{:08}{:08x}", c, dump.status_a),
-                [Some(c), Some(d)] => format!(
-                    "{:08}{:08x}    {:08}{:08x}",
-                    c, dump.status_a, d, dump.status_b
-                ),
-            }
-        ),
+        dump.lr,
+        dump.pc,
+        match dump.exception_type.status_reg_names() {
+            [None, _] => "".to_string(),
+            [Some(c), None] => format!("{:08}{:08x}", c, dump.status_a),
+            [Some(c), Some(d)] => format!(
+                "{:08}{:08x}    {:08}{:08x}",
+                c, dump.status_a, d, dump.status_b
+            ),
+        },
         dump.call_stack[0],
         dump.call_stack[1],
         dump.call_stack[2],

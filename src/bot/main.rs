@@ -21,6 +21,7 @@ type PartialContext<'a> = poise::PartialContext<'a, Data, Error>;
 type Result<T> = std::result::Result<T, Error>;
 
 const BERTRAM_COLOR: i32 = 0xbbf89b;
+const TAG_COLOR: i32 = 0x00a3ff;
 
 pub static RUSTC_AT_BUILD: &str = env!("RUSTC_VER");
 pub static COMMIT_AT_BUILD: &str = env!("GIT_HASH");
@@ -60,6 +61,7 @@ async fn main() {
                 commands::crash::analyze(),
                 // tags / FAQs
                 commands::tags::docs(),
+                commands::tags::faq(),
             ],
             on_error: |err| Box::pin(on_error(err)),
             owners: {
