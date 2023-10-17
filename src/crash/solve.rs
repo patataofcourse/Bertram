@@ -1,7 +1,7 @@
 // Bertram crash solver
 // The way this works is: 1. get crash 2. detect specific addresses in the PC/LR/call stack 3. profit
 
-use super::{saltwater::Region, CrashInfo};
+use super::{saltwater::Region, CrashInfo, ModdingEngine};
 
 use anyhow::anyhow;
 
@@ -73,7 +73,10 @@ impl SolveDiagnosis {
             out.push(Self::InvalidTickflowAddress(crash.far))
         } else if crash.pc == Self::no_effect_memory_pc(region) {
             out.push(Self::NoEffectMemory)
-        } else if crash.pc >= bounds.rodata {
+        } else if crash.pc >= bounds.rodata
+            && (matches!(crash.engine, ModdingEngine::RHMPatch)
+                || (crash.pc < 0x07000000 || crash.pc >= 0x08000000))
+        {
             out.push(Self::NonExecRegion(crash.pc))
         }
 
