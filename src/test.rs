@@ -20,7 +20,7 @@ fn main() -> anyhow::Result<()> {
     //println!("{}", CtruError::from_code(0xd8c3fbf3));
     //println!("{}", CtruError::from_code(0xc8804478));
 
-    let mut f = File::open("test_files/crash_dump_00000006.dmp")?;
+    let mut f = File::open("test_files/crash_dump_00000002.dmp")?;
     let luma_crash = CrashLuma::from_file(&mut f)?;
     let generic_luma = luma_crash.as_generic(Some(5))?;
 

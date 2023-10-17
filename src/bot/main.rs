@@ -55,6 +55,7 @@ async fn main() {
                 // crash helpers
                 commands::crash::ctru(),
                 commands::crash::symbol(),
+                commands::crash::solve(),
                 // crash - for coders
                 commands::crash::luma(),
                 commands::crash::saltwater(),

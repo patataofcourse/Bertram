@@ -74,7 +74,7 @@ impl CsvSymbol {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CsvBounds {
     #[serde(alias = "Version")]
     pub version: String,
@@ -116,6 +116,16 @@ pub fn get_3gx_commit_hash(f: &mut (impl Read + Seek)) -> anyhow::Result<Option<
     }
 }
 
+pub fn get_megamix_bounds() -> anyhow::Result<Vec<CsvBounds>> {
+    let mut builder = csv::ReaderBuilder::new();
+    builder.trim(Trim::Fields);
+
+    let mut megamix_bounds = builder.from_path("sym/bounds.csv")?;
+    Ok(megamix_bounds
+        .deserialize::<CsvBounds>()
+        .try_collect::<Vec<_>>()?)
+}
+
 impl Symbols {
     pub fn from_paths(
         megamix_path: impl AsRef<Path>,
@@ -153,14 +163,11 @@ impl Symbols {
     }
 
     pub fn init_bounds(&mut self, region: Region) -> anyhow::Result<()> {
-        let mut builder = csv::ReaderBuilder::new();
-        builder.trim(Trim::Fields);
-
-        let mut megamix_bounds = builder.from_path("sym/bounds.csv")?;
-        let Some(Ok(a)) = megamix_bounds.deserialize::<CsvBounds>().find(|c| {
-            let Ok(bound) = c else { return false };
-            region.matches(&bound.version)
-        }) else {
+        let Some(a) = get_megamix_bounds()?
+            .iter()
+            .find(|c| region.matches(&c.version))
+            .cloned()
+        else {
             Err(anyhow!("Bounds file doesn't include {:?} region", region))?
         };
         self.megamix_end = Some(a.rodata);

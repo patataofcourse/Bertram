@@ -9,6 +9,7 @@ use bertram::{
         analyze::{self, CrashAnalysis, Symbols},
         luma::{CrashLuma, LumaProcessor},
         saltwater::{CrashSWD, Region, SWDType},
+        solve::SolveDiagnosis,
         ExcType, FAULT_STATUS_SOURCES,
     },
     ctru::CtruError,
@@ -308,6 +309,20 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
         dump.call_stack[4],
     ))
     .await?;
+    Ok(())
+}
+
+/// Gives possible errors that could cause a crash
+#[poise::command(prefix_command, category = "Helpers", owners_only)]
+pub async fn solve(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+    let dump = match fetch_luma_dump(&ctx, link.as_deref()).await {
+        Ok(c) => c.as_generic(Some(5))?,
+        Err(_) => fetch_saltwater_dump(&ctx, link.as_deref())
+            .await?
+            .as_generic(),
+    };
+    let diagnoses = SolveDiagnosis::find_matches(&dump);
+    ctx.say(format!("{diagnoses:?}")).await?;
     Ok(())
 }
 
