@@ -34,12 +34,23 @@ async fn prefix(ctx: PartialContext<'_>) -> Result<Option<String>> {
     }
 }
 
+async fn alpha_check(ctx: Context<'_>) -> Result<bool> {
+    Ok(
+        [1088507265759314020, 856358616469864489, 1112147857596760124]
+            .contains(&ctx.channel_id().0)
+            || [1012766391897698394].contains(&match ctx.guild_id() {
+                Some(c) => c.0,
+                None => 0,
+            }),
+    )
+}
+
 #[tokio::main]
 async fn main() {
     let framework = Framework::builder()
         .options(FrameworkOptions {
             prefix_options: PrefixFrameworkOptions {
-                mention_as_prefix: true,
+                mention_as_prefix: false,
                 dynamic_prefix: Some(|ctx| Box::pin(prefix(ctx))),
                 ..Default::default()
             },
@@ -78,20 +89,10 @@ async fn main() {
                 Box::pin(event::event_handler(ctx, event, framework, data))
             },
             // remove this after SpiceRack alpha is over
-            command_check: Some(|c: Context| {
-                Box::pin(async move {
-                    Ok(
-                        [1088507265759314020, 856358616469864489, 1112147857596760124]
-                            .contains(&c.channel_id().0)
-                            || [1012766391897698394].contains(&match c.guild_id() {
-                                Some(c) => c.0,
-                                None => 0,
-                            }),
-                    )
-                })
-            }),
+            command_check: Some(|c| Box::pin(alpha_check(c))),
             reply_callback: Some(|_, reply| {
                 reply.reply(true);
+                reply.allowed_mentions(|c| c.empty_parse());
             }),
             ..Default::default()
         })
