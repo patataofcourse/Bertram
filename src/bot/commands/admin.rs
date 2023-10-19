@@ -5,7 +5,7 @@ use poise::serenity_prelude::{self as serenity};
 use crate::helpers::embed;
 
 /// Kills the bot
-#[poise::command(prefix_command, category = "Admin", owners_only)]
+#[poise::command(prefix_command, category = "Admin", check = "crate::op_check")]
 pub async fn kill(ctx: crate::Context<'_>) -> crate::Result<()> {
     ctx.say("*poofs into smoke*").await?;
     ctx.serenity_context()
@@ -15,7 +15,7 @@ pub async fn kill(ctx: crate::Context<'_>) -> crate::Result<()> {
 }
 
 /// Recompiles and reboots the bot
-#[poise::command(prefix_command, category = "Admin", owners_only)]
+#[poise::command(prefix_command, category = "Admin", check = "crate::op_check")]
 pub async fn recompile(ctx: crate::Context<'_>) -> crate::Result<()> {
     if env::var("RECOMPILE").is_ok() {
         let m = ctx.say("Recompiling bot...").await?;
@@ -37,7 +37,7 @@ pub async fn recompile(ctx: crate::Context<'_>) -> crate::Result<()> {
     }
 }
 
-#[poise::command(prefix_command, category = "Admin", owners_only)]
+#[poise::command(prefix_command, category = "Admin", check = "crate::op_check")]
 pub async fn info(ctx: crate::Context<'_>) -> crate::Result<()> {
     //TODO: parse nightlies to use format "nightly-YYYY-MM-DD (rust 1.XX)""
     let rustc_ver = (|| {
@@ -62,7 +62,6 @@ pub async fn info(ctx: crate::Context<'_>) -> crate::Result<()> {
     })();
     embed(ctx, |e| {
         e.title("Bertram info")
-            .color(crate::BERTRAM_COLOR)
             .field(
                 "rustc version",
                 format!(

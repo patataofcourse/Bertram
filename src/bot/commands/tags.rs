@@ -14,9 +14,12 @@ pub async fn docs(ctx: crate::Context<'_>) -> crate::Result<()> {
     Ok(())
 }
 
-/// Displays FAQ tags
+/// Displays FAQ tags. Use with no tag to see a list of tags.
 #[poise::command(prefix_command, category = "Tags")]
-pub async fn faq(ctx: crate::Context<'_>, name: Option<String>) -> crate::Result<()> {
+pub async fn faq(
+    ctx: crate::Context<'_>,
+    #[description = "Name of the tag to use"] name: Option<String>,
+) -> crate::Result<()> {
     match name {
         Some(c) => {
             let Some(question) = QUESTIONS.iter().find(|q| q.name == c) else {

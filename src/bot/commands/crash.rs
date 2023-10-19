@@ -53,7 +53,10 @@ pub async fn fetch_saltwater_dump(
 
 /// Analyzes an ErrDisp / ctru error code
 #[poise::command(prefix_command, category = "Helpers")]
-pub async fn ctru(ctx: crate::Context<'_>, code: String) -> crate::Result<()> {
+pub async fn ctru(
+    ctx: crate::Context<'_>,
+    #[description = "Error code to interpret"] code: String,
+) -> crate::Result<()> {
     let Ok(code) = u32::from_str_radix(code.trim_start_matches("0x"), 16) else {
         Err("Not a valid hex number")?
     };
@@ -64,7 +67,11 @@ pub async fn ctru(ctx: crate::Context<'_>, code: String) -> crate::Result<()> {
 
 /// Gives a report on a Luma3DS crash dump (.dmp)
 #[poise::command(prefix_command, subcommands("stack"), category = "For code modders")]
-pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+pub async fn luma(
+    ctx: crate::Context<'_>,
+    #[description = "Link to the crash dump. If not provided, it expects the dump to be sent as an attachment"]
+    link: Option<String>,
+) -> crate::Result<()> {
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;
 
     //TODO: move formatting to main crate
@@ -183,10 +190,12 @@ pub async fn luma(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resul
 #[poise::command(prefix_command)]
 pub async fn stack(
     ctx: crate::Context<'_>,
+    #[description = "Link to the crash dump. If not provided, it expects the dump to be sent as an attachment"]
     link: Option<String>,
+    #[description = "Amount of lines to display. Currently requires `link` due to limitations."]
     size: Option<usize>,
 ) -> crate::Result<()> {
-    //TODO: maybe make it possible for size to be given on its own?
+    //TODO: maybe make it possible for size to be given on its own? how though?
     let dump = fetch_luma_dump(&ctx, link.as_deref()).await?;
 
     let mut formatted_stack = String::new();
@@ -215,7 +224,11 @@ pub async fn stack(
 
 /// Gives a report on a Saltwater crash dump (.swd)
 #[poise::command(prefix_command, category = "For code modders")]
-pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+pub async fn saltwater(
+    ctx: crate::Context<'_>,
+    #[description = "Link to the crash dump. If not provided, it expects the dump to be sent as an attachment"]
+    link: Option<String>,
+) -> crate::Result<()> {
     let dump = fetch_saltwater_dump(&ctx, link.as_deref()).await?;
 
     //TODO: move formatting to main crate
@@ -313,8 +326,12 @@ pub async fn saltwater(ctx: crate::Context<'_>, link: Option<String>) -> crate::
 }
 
 /// Gives possible errors that could cause a crash
-#[poise::command(prefix_command, category = "Helpers", owners_only)]
-pub async fn solve(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+#[poise::command(prefix_command, category = "Helpers", check = "crate::op_check")]
+pub async fn solve(
+    ctx: crate::Context<'_>,
+    #[description = "Link to the crash dump. If not provided, it expects the dump to be sent as an attachment"]
+    link: Option<String>,
+) -> crate::Result<()> {
     let dump = match fetch_luma_dump(&ctx, link.as_deref()).await {
         Ok(c) => c.as_generic(Some(5))?,
         Err(_) => fetch_saltwater_dump(&ctx, link.as_deref())
@@ -326,11 +343,12 @@ pub async fn solve(ctx: crate::Context<'_>, link: Option<String>) -> crate::Resu
     Ok(())
 }
 
+/// Gets the name of a specific symbol in RHM for the specified region
 #[poise::command(prefix_command, category = "For code modders")]
 pub async fn symbol(
     ctx: crate::Context<'_>,
-    sym: String,
-    region: Option<String>,
+    #[description = "Location of the symbol (hexadecimal)."] sym: String,
+    #[description = "Region to lookup (US/EU/JP/KR). Defaults to US."] region: Option<String>,
 ) -> crate::Result<()> {
     let region = match region
         .map(|c| c.to_lowercase())
@@ -363,7 +381,11 @@ pub async fn symbol(
 }
 
 #[poise::command(prefix_command, category = "For code modders")]
-pub async fn analyze(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+pub async fn analyze(
+    ctx: crate::Context<'_>,
+    #[description = "Link to the crash dump. If not provided, it expects the dump to be sent as an attachment"]
+    link: Option<String>,
+) -> crate::Result<()> {
     let dump = match fetch_luma_dump(&ctx, link.as_deref()).await {
         Ok(c) => c.as_generic(Some(5))?,
         Err(_) => fetch_saltwater_dump(&ctx, link.as_deref())
@@ -371,16 +393,17 @@ pub async fn analyze(ctx: crate::Context<'_>, link: Option<String>) -> crate::Re
             .as_generic(),
     };
     let analysis = CrashAnalysis::from(&dump)?;
-    embed(ctx, |e| {
-        analysis.as_serenity_embed(e).color(crate::BERTRAM_COLOR)
-    })
-    .await?;
+    embed(ctx, |e| analysis.as_serenity_embed(e)).await?;
     Ok(())
 }
 
 /// Generate Saltwater symbols for debug builds
 #[poise::command(prefix_command, category = "Admin", owners_only)]
-pub async fn symbolgen(ctx: crate::Context<'_>, link: Option<String>) -> crate::Result<()> {
+pub async fn symbolgen(
+    ctx: crate::Context<'_>,
+    #[description = "Link to the Saltwater 3GX file. If not provided, it expects the plugin to be sent as an attachment"]
+    link: Option<String>,
+) -> crate::Result<()> {
     let _3gx = if let Context::Prefix(c) = ctx && !c.msg.attachments.is_empty() {
         c.msg.attachments[0].download().await?
     } else {

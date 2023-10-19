@@ -4,8 +4,8 @@ use std::collections::HashSet;
 use std::env;
 
 use poise::{
-    serenity_prelude as serenity, Framework, FrameworkError, FrameworkOptions,
-    PrefixFrameworkOptions,
+    serenity_prelude::{self as serenity, UserId},
+    Framework, FrameworkError, FrameworkOptions, PrefixFrameworkOptions,
 };
 
 pub mod commands;
@@ -14,8 +14,11 @@ pub mod event;
 pub mod helpers;
 
 #[derive(Debug)]
-pub struct Data;
+pub struct Data {
+    pub ops: Vec<UserId>,
+}
 type Error = Box<dyn std::error::Error + Send + Sync>;
+type Command = poise::Command<Data, Error>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 type PartialContext<'a> = poise::PartialContext<'a, Data, Error>;
 type Result<T> = std::result::Result<T, Error>;
@@ -45,6 +48,11 @@ async fn alpha_check(ctx: Context<'_>) -> Result<bool> {
     )
 }
 
+async fn op_check(ctx: Context<'_>) -> Result<bool> {
+    Ok(ctx.data().ops.contains(&ctx.author().id)
+        || ctx.framework().options.owners.contains(&ctx.author().id))
+}
+
 #[tokio::main]
 async fn main() {
     let framework = Framework::builder()
@@ -57,7 +65,7 @@ async fn main() {
             commands: vec![
                 // misc / generic
                 ping(),
-                help(),
+                commands::help::help(),
                 // admin
                 commands::admin::kill(),
                 commands::admin::recompile(),
@@ -100,7 +108,13 @@ async fn main() {
         .intents(
             serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT,
         )
-        .setup(|_ctx, _ready, _framework| Box::pin(async move { Ok(Data) }));
+        .setup(|_ctx, _ready, _framework| {
+            Box::pin(async move {
+                Ok(Data {
+                    ops: vec![UserId(231520589511262209)],
+                })
+            })
+        });
 
     framework.run().await.unwrap();
 }
@@ -117,20 +131,4 @@ async fn on_error(e: FrameworkError<'_, Data, Error>) {
         Ok(_) => {}
         Err(e) => println!("Failed to send error diagnostic: {:?}\n\n", e),
     }
-}
-
-// help command copied from an example
-
-/// Shows this menu
-#[poise::command(prefix_command)]
-pub async fn help(
-    ctx: Context<'_>,
-    #[description = "Specific command to show help about"] command: Option<String>,
-) -> Result<()> {
-    let config = poise::builtins::HelpConfiguration {
-        extra_text_at_bottom: "Type !help command for more info on a command.",
-        ..Default::default()
-    };
-    poise::builtins::help(ctx, command.as_deref(), config).await?;
-    Ok(())
 }
