@@ -202,28 +202,43 @@ impl Symbols {
             let mut current_sym: Option<(u32, String)> = None;
             for sym in mm_syms {
                 let sym = sym?;
-                if let Some(c) = &current_sym && sym.location < c.0 {
+                if let Some(c) = &current_sym
+                    && sym.location < c.0
+                {
                     unreachable!("This should never happen!")
                 }
                 if sym.location > pos {
-                    break
+                    break;
                 }
                 current_sym = Some((sym.location, sym.full_name()))
             }
-            Ok(current_sym.map(|c|Function{reg_pos: pos, func_pos: c.0, symbol: c.1}))
-        } else if pos >= 0x07000000 && pos <= self.saltwater_end.unwrap() && let Some(sw_syms) = self.saltwater()? {
+            Ok(current_sym.map(|c| Function {
+                reg_pos: pos,
+                func_pos: c.0,
+                symbol: c.1,
+            }))
+        } else if pos >= 0x07000000
+            && pos <= self.saltwater_end.unwrap()
+            && let Some(sw_syms) = self.saltwater()?
+        {
             let mut current_sym: Option<(u32, String)> = None;
             for sym in sw_syms {
                 let sym = sym?;
-                if let Some(c) = &current_sym && sym.location < c.0 {
+                if let Some(c) = &current_sym
+                    && sym.location < c.0
+                {
                     unreachable!("This should never happen!")
                 }
                 if sym.location > pos {
-                    break
+                    break;
                 }
                 current_sym = Some((sym.location, sym.full_name()))
             }
-            Ok(current_sym.map(|c|Function{reg_pos: pos, func_pos: c.0, symbol: c.1}))
+            Ok(current_sym.map(|c| Function {
+                reg_pos: pos,
+                func_pos: c.0,
+                symbol: c.1,
+            }))
         } else {
             Ok(None)
         }

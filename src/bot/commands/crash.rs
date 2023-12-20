@@ -21,7 +21,9 @@ pub async fn fetch_luma_dump(
     ctx: &crate::Context<'_>,
     link: Option<&str>,
 ) -> crate::Result<CrashLuma> {
-    let file = if let Context::Prefix(c) = ctx && !c.msg.attachments.is_empty() {
+    let file = if let Context::Prefix(c) = ctx
+        && !c.msg.attachments.is_empty()
+    {
         c.msg.attachments[0].download().await?
     } else {
         reqwest::get(link.ok_or("No file given")?)
@@ -38,7 +40,9 @@ pub async fn fetch_saltwater_dump(
     ctx: &crate::Context<'_>,
     link: Option<&str>,
 ) -> crate::Result<CrashSWD> {
-    let file = if let Context::Prefix(c) = ctx && !c.msg.attachments.is_empty() {
+    let file = if let Context::Prefix(c) = ctx
+        && !c.msg.attachments.is_empty()
+    {
         c.msg.attachments[0].download().await?
     } else {
         reqwest::get(link.ok_or("No file given")?)
@@ -404,7 +408,9 @@ pub async fn symbolgen(
     #[description = "Link to the Saltwater 3GX file. If not provided, it expects the plugin to be sent as an attachment"]
     link: Option<String>,
 ) -> crate::Result<()> {
-    let _3gx = if let Context::Prefix(c) = ctx && !c.msg.attachments.is_empty() {
+    let _3gx = if let Context::Prefix(c) = ctx
+        && !c.msg.attachments.is_empty()
+    {
         c.msg.attachments[0].download().await?
     } else {
         reqwest::get(link.ok_or("No file given")?)

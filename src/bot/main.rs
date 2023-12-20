@@ -37,15 +37,13 @@ async fn prefix(ctx: PartialContext<'_>) -> Result<Option<String>> {
     }
 }
 
+fn alpha_check_inner(channel: serenity::ChannelId, guild: Option<serenity::GuildId>) -> bool {
+    [1088507265759314020, 856358616469864489, 1112147857596760124].contains(&channel.0)
+        || [1012766391897698394].contains(&guild.map(|c| c.0).unwrap_or(0))
+}
+
 async fn alpha_check(ctx: Context<'_>) -> Result<bool> {
-    Ok(
-        [1088507265759314020, 856358616469864489, 1112147857596760124]
-            .contains(&ctx.channel_id().0)
-            || [1012766391897698394].contains(&match ctx.guild_id() {
-                Some(c) => c.0,
-                None => 0,
-            }),
-    )
+    Ok(alpha_check_inner(ctx.channel_id(), ctx.guild_id()))
 }
 
 async fn op_check(ctx: Context<'_>) -> Result<bool> {
@@ -88,7 +86,9 @@ async fn main() {
                 let mut def = HashSet::new();
                 //TODO: autodetect owners (default::Default :P)
                 def.insert(serenity::UserId(329357113480708106));
-                if let Ok(c) = env::var("PRIVATE_ACCOUNT") && let Ok(id) = c.parse() {
+                if let Ok(c) = env::var("PRIVATE_ACCOUNT")
+                    && let Ok(id) = c.parse()
+                {
                     def.insert(serenity::UserId(id));
                 }
                 def
@@ -126,9 +126,8 @@ async fn ping(ctx: Context<'_>) -> Result<()> {
     Ok(())
 }
 
-async fn on_error(e: FrameworkError<'_, Data, Error>) {
-    match error::on_error(e).await {
-        Ok(_) => {}
-        Err(e) => println!("Failed to send error diagnostic: {:?}\n\n", e),
-    }
+async fn on_error(err: FrameworkError<'_, Data, Error>) {
+    error::on_error(err)
+        .await
+        .unwrap_or_else(|e| println!("Failed to send error diagnostic: {:?}\n\n", e))
 }

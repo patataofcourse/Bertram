@@ -23,8 +23,14 @@ pub async fn on_error(
             msg,
             ctx,
             prefix,
+            framework,
             ..
         } => {
+            if framework.options().command_check.is_some()
+                && !crate::alpha_check_inner(msg.channel_id, msg.guild_id)
+            {
+                return Ok(());
+            }
             msg.reply(
                 ctx,
                 format!(
