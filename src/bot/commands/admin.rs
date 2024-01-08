@@ -60,8 +60,17 @@ pub async fn info(ctx: crate::Context<'_>) -> crate::Result<()> {
         )
         .ok()
     })();
+    let hostname =
+        (|| String::from_utf8(process::Command::new("hostname").output().ok()?.stdout).ok())();
     embed(ctx, |e| {
         e.title("Bertram info")
+            .field(
+                "Running on:",
+                hostname
+                    .map(|c| format!("`{c}`"))
+                    .unwrap_or("unavailable".to_string()),
+                false,
+            )
             .field(
                 "rustc version",
                 format!(

@@ -16,6 +16,7 @@ pub mod helpers;
 #[derive(Debug)]
 pub struct Data {
     pub ops: Vec<UserId>,
+    pub prefix_override: Option<String>,
 }
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Command = poise::Command<Data, Error>;
@@ -32,6 +33,8 @@ pub static COMMIT_AT_BUILD: &str = env!("GIT_HASH");
 async fn prefix(ctx: PartialContext<'_>) -> Result<Option<String>> {
     if ctx.guild_id == Some(serenity::GuildId(277545487375007744)) {
         Ok(Some("-".to_string()))
+    } else if let Some(c) = &ctx.data.prefix_override {
+        Ok(Some(c.to_string()))
     } else {
         Ok(Some("!".to_string()))
     }
@@ -53,6 +56,7 @@ async fn op_check(ctx: Context<'_>) -> Result<bool> {
 
 #[tokio::main]
 async fn main() {
+    let prefix_override = std::env::var("BERTRAM_PREFIX").ok();
     let framework = Framework::builder()
         .options(FrameworkOptions {
             prefix_options: PrefixFrameworkOptions {
@@ -112,6 +116,7 @@ async fn main() {
             Box::pin(async move {
                 Ok(Data {
                     ops: vec![UserId(231520589511262209)],
+                    prefix_override,
                 })
             })
         });
