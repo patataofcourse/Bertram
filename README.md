@@ -3,11 +3,13 @@ A helper bot for Megamix modding!
 
 ## Symbols
 You'll need to add Megamix symbols files in the `sym` folder. An example (example_sym.csv) has been included. Required symbols are:
-    - Rhythm Heaven Megamix (US): `sym/rhm.us.csv`
-    - Rhythm Paradise Megamix (EU): `sym/rhm.eu.csv`
-    - Rhythm Sesang Megamix (KR): `sym/rhm.kr.csv`
 
-Symbols for all Saltwater stable versions will be included in the repository. For debug builds, please store them under `sym/sw._[COMMIT_HASH].csv`
+- Rhythm Tengoku: The Best + (JP, partial support): `sym/rhm.jp.csv`
+- Rhythm Heaven Megamix (US): `sym/rhm.us.csv`
+- Rhythm Paradise Megamix (EU): `sym/rhm.eu.csv`
+- Rhythm Sesang: The Best + (KR): `sym/rhm.kr.csv`
+
+Symbols for all Saltwater stable versions (aside from 0.1.x) will be included in the repository. For debug builds, please store them under `sym/sw._[COMMIT_HASH].csv`
 
 ## Rust version
 Bertram requires nightly Rust due to let-chains and try_collect not being stable yet. Once those are in stable Rust, I'll look into supporting it again.
