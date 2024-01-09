@@ -17,7 +17,7 @@ required-features = ["bot"]
 bytestream = "0.4"
 anyhow = "1"
 csv = "1.1"
-serde = { version = "^1, <=1.0.171", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 serde-hex = "0.1"
 grep-regex = "0.1"
 grep-matcher = "0.1"
