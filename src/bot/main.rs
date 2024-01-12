@@ -41,7 +41,13 @@ async fn prefix(ctx: PartialContext<'_>) -> Result<Option<String>> {
 }
 
 fn alpha_check_inner(channel: serenity::ChannelId, guild: Option<serenity::GuildId>) -> bool {
-    [1088507265759314020, 856358616469864489, 1112147857596760124].contains(&channel.0)
+    [
+        1088507265759314020,
+        856358616469864489,
+        1112147857596760124,
+        278617608360689666,
+    ]
+    .contains(&channel.0)
         || [1012766391897698394].contains(&guild.map(|c| c.0).unwrap_or(0))
 }
 
