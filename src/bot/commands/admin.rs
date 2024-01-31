@@ -9,8 +9,7 @@ use crate::helpers::embed;
 pub async fn kill(ctx: crate::Context<'_>) -> crate::Result<()> {
     ctx.say("*poofs into smoke*").await?;
     ctx.serenity_context()
-        .set_presence(None, serenity::OnlineStatus::Invisible)
-        .await;
+        .set_presence(None, serenity::OnlineStatus::Invisible);
     process::exit(0);
 }
 

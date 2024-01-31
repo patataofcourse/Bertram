@@ -1,4 +1,4 @@
-use poise::{serenity_prelude as serenity, FrameworkError};
+use poise::{serenity_prelude::prelude as serenity, CreateReply, FrameworkError};
 
 pub async fn on_error(
     e: FrameworkError<'_, crate::Data, crate::Error>,
@@ -11,7 +11,13 @@ pub async fn on_error(
         } => {
             println!(
                 "Error setting up bot {}#{}:\n{}",
-                data_about_bot.user.name, data_about_bot.user.discriminator, error
+                data_about_bot.user.name,
+                data_about_bot
+                    .user
+                    .discriminator
+                    .map(|c| c.get())
+                    .unwrap_or(0),
+                error
             )
         }
         FrameworkError::ArgumentParse { error, ctx, .. } => {
@@ -41,14 +47,15 @@ pub async fn on_error(
             )
             .await?;
         }
-        FrameworkError::NotAnOwner { ctx } => {
-            ctx.send(|f| {
-                f.reply(true)
-                    .content("You don't have permission to run this command!")
-            })
+        FrameworkError::NotAnOwner { ctx, .. } => {
+            ctx.send(
+                CreateReply::default()
+                    .reply(true)
+                    .content("You don't have permission to run this command!"),
+            )
             .await?;
         }
-        FrameworkError::Command { error, ctx } => {
+        FrameworkError::Command { error, ctx, .. } => {
             ctx.say(format!(
                 "An error happened while trying to run the command:```\n{}```",
                 error
@@ -58,6 +65,7 @@ pub async fn on_error(
         FrameworkError::CommandCheckFailed {
             error: None,
             ctx: _,
+            ..
         } => {}
         e => {
             let Some(ctx) = e.ctx() else {

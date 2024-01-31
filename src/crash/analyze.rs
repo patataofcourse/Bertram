@@ -452,7 +452,7 @@ use serenity::builder::CreateEmbed;
 
 #[cfg(feature = "bot")]
 impl CrashAnalysis {
-    pub fn as_serenity_embed<'a>(&self, embed: &'a mut CreateEmbed) -> &'a mut CreateEmbed {
+    pub fn as_serenity_embed(&self, embed: CreateEmbed) -> CreateEmbed {
         embed
             .title(format!(
                 "Crash analysis for {}:",

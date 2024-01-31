@@ -3,6 +3,7 @@
 use std::collections::HashSet;
 use std::env;
 
+use ::serenity::builder::CreateAllowedMentions;
 use poise::{
     serenity_prelude::{self as serenity, UserId},
     Framework, FrameworkError, FrameworkOptions, PrefixFrameworkOptions,
@@ -31,7 +32,7 @@ pub static RUSTC_AT_BUILD: &str = env!("RUSTC_VER");
 pub static COMMIT_AT_BUILD: &str = env!("GIT_HASH");
 
 async fn prefix(ctx: PartialContext<'_>) -> Result<Option<String>> {
-    if ctx.guild_id == Some(serenity::GuildId(277545487375007744)) {
+    if ctx.guild_id == Some(serenity::GuildId::new(277545487375007744)) {
         Ok(Some("-".to_string()))
     } else if let Some(c) = &ctx.data.prefix_override {
         Ok(Some(c.to_string()))
@@ -47,8 +48,8 @@ fn alpha_check_inner(channel: serenity::ChannelId, guild: Option<serenity::Guild
         1112147857596760124,
         278617608360689666,
     ]
-    .contains(&channel.0)
-        || [1012766391897698394].contains(&guild.map(|c| c.0).unwrap_or(0))
+    .contains(&channel.get())
+        || [1012766391897698394].contains(&guild.map(|c| c.get()).unwrap_or(0))
 }
 
 async fn alpha_check(ctx: Context<'_>) -> Result<bool> {
@@ -95,11 +96,11 @@ async fn main() {
             owners: {
                 let mut def = HashSet::new();
                 //TODO: autodetect owners (default::Default :P)
-                def.insert(serenity::UserId(329357113480708106));
+                def.insert(serenity::UserId::new(329357113480708106));
                 if let Ok(c) = env::var("PRIVATE_ACCOUNT")
                     && let Ok(id) = c.parse()
                 {
-                    def.insert(serenity::UserId(id));
+                    def.insert(serenity::UserId::new(id));
                 }
                 def
             },
@@ -109,25 +110,30 @@ async fn main() {
             // remove this after SpiceRack alpha is over
             command_check: Some(|c| Box::pin(alpha_check(c))),
             reply_callback: Some(|_, reply| {
-                reply.reply(true);
-                reply.allowed_mentions(|c| c.empty_parse());
+                reply
+                    .reply(true)
+                    .allowed_mentions(CreateAllowedMentions::new().empty_users())
             }),
             ..Default::default()
         })
-        .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
-        .intents(
-            serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT,
-        )
         .setup(|_ctx, _ready, _framework| {
             Box::pin(async move {
                 Ok(Data {
-                    ops: vec![UserId(231520589511262209)],
+                    ops: vec![UserId::new(231520589511262209)],
                     prefix_override,
                 })
             })
-        });
+        })
+        .build();
 
-    framework.run().await.unwrap();
+    let client = serenity::ClientBuilder::new(
+        std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"),
+        serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT,
+    )
+    .framework(framework)
+    .await;
+
+    client.unwrap().start().await.unwrap();
 }
 
 #[poise::command(prefix_command)]

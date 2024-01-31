@@ -1,3 +1,5 @@
+use serenity::builder::CreateEmbedFooter;
+
 use crate::{helpers::embed, Command, Context, Result};
 
 /// Show this help menu
@@ -27,19 +29,19 @@ async fn command_help(ctx: Context<'_>, cmdname: String) -> Result<()> {
             ctx.say(format!("No command \"{cmdname}\" found")).await?;
         }
         Some(cmd) => {
-            embed(ctx, |embed| {
+            embed(ctx, |mut embed| {
                 //TODO: subcommands
-                embed
+                embed = embed
                     .title(format!("{}{}", ctx.prefix(), cmdname))
                     .description(cmd.description.as_deref().unwrap_or(""))
-                    .footer(|c| c.text("Bertram help"))
+                    .footer(CreateEmbedFooter::new("Bertram help"))
                     .field(
                         "Usage",
                         format!("{}{} {}", ctx.prefix(), cmdname, command_usage(cmd, false)),
                         false,
                     );
                 if !cmd.parameters.is_empty() {
-                    embed.field(
+                    embed = embed.field(
                         "Arguments",
                         cmd.parameters
                             .iter()
@@ -77,9 +79,12 @@ pub async fn display_commands(ctx: Context<'_>) -> Result<()> {
             continue;
         }
 
-        match categories.iter_mut().find(|cat| cat.0 == cmd.category) {
+        match categories
+            .iter_mut()
+            .find(|cat| cat.0 == cmd.category.as_deref())
+        {
             Some(c) => c.1.push(cmd),
-            None => categories.push((cmd.category, vec![cmd])),
+            None => categories.push((cmd.category.as_deref(), vec![cmd])),
         }
     }
     embed(ctx, |embed| {
