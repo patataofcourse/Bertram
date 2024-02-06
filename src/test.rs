@@ -20,9 +20,9 @@ fn main() -> anyhow::Result<()> {
     //println!("{}", CtruError::from_code(0xd8c3fbf3));
     //println!("{}", CtruError::from_code(0xc8804478));
 
-    let mut f = File::open("test_files/crash_dump_00000002.dmp")?;
-    let luma_crash = CrashLuma::from_file(&mut f)?;
-    let generic_luma = luma_crash.as_generic(Some(5))?;
+    //let mut f = File::open("test_files/crash_dump_00000002.dmp")?;
+    //let luma_crash = CrashLuma::from_file(&mut f)?;
+    //let generic_luma = luma_crash.as_generic(Some(5))?;
 
     //println!("{:#X?}", generic_luma);
 
@@ -32,7 +32,11 @@ fn main() -> anyhow::Result<()> {
 
     //println!("{:#X?}", generic_swd);
 
-    println!("{:?}", SolveDiagnosis::find_matches(&generic_luma));
+    //println!("{:?}", SolveDiagnosis::find_matches(&generic_luma));
+
+    let mut f = File::open("test_files/saltwater_v0.2.3gx")?;
+    let mut out = File::create("test_files/sw.0.2.csv")?;
+    Symbols::ctrplugin_symbols_to_csv(&mut f, &mut out, true)?;
 
     Ok(())
 }
