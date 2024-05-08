@@ -218,8 +218,9 @@ impl Symbols {
                 symbol: c.1,
             }))
         } else if pos >= 0x07000000
+            && let Some(sw_end) = self.saltwater_end
             && let Some(sw_syms) = self.saltwater()?
-            && pos <= self.saltwater_end.unwrap()
+            && pos <= sw_end
         {
             let mut current_sym: Option<(u32, String)> = None;
             for sym in sw_syms {
