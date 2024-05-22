@@ -1,0 +1,22 @@
+name = "Spaceball"
+scene = 0
+keywords = ["spaceball", "air batter", "agbbatter"]
+
+sfx = "GROUP_AGB_BATTER"
+
+[versions]
+long = "Spaceball"
+remix = ["remixLED", "remix06"]
+
+[indexes]
+long = 0xF
+
+[prologue]
+long = "agbBatter"
+
+[cellanim]
+long = "agbBatter_long"
+remixLED = "agbBatter_remixLED"
+
+[aac]
+long = ["agb_batter_32k", 0x01000052]

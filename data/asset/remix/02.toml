@@ -1,0 +1,40 @@
+remix = true
+
+name = "Citrus Remix"
+index = 0x62
+keywords = ["citrus remix", "citrus", "remix02"]
+
+[prologue]
+long = "remix02"
+
+[aac]
+long = ["remix01_pati", 0x10000D0]
+
+# Clappy Trio
+[[game]]
+scene = 0x1
+cellanim = "agbClap_remix02"
+layout = "agbClap_remix"
+sfx = "GROUP_AGB_PATI"
+
+# Shoot-'em-up
+[[game]]
+scene = 0x19
+cellanim = "ntrShooting_remix02"
+effect = "ntrShooting"
+sfx = "GROUP_NTR_SHOOTING"
+
+# Micro-Row
+[[game]]
+scene = 0x23
+cellanim = "rvlFlea_remix02"
+effect = "rvlFlea"
+sfx = "GROUP_MIJINKO"
+
+# Second Contact
+[[game]]
+scene = 0x39
+cellanim = "ctrInterpreter_remix02"
+layout = "ctrInterpreter"
+effect = "ctrInterpreter"
+sfx = "GROUP_TSUYAKU"

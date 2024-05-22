@@ -1,0 +1,37 @@
+remix = true
+
+name = "Donut Remix"
+index = 0x63
+keywords = ["donut remix", "donut", "remix03"]
+
+[prologue]
+long = "remix03"
+
+[aac]
+long = ["remix_blue_final", 0x10000D1]
+
+# Rat Race
+[[game]]
+scene = 0x9
+cellanim = "agbRat_remix03"
+sfx = "GROUP_AGB_RAT"
+
+# Fan Club
+[[game]]
+scene = 0x15
+cellanim = "ntrIdol_remix03"
+effect = "ntrIdol"
+sfx = "GROUP_NTR_IDOL"
+
+# Working Dough
+[[game]]
+scene = 0x29
+cellanim = "rvlManju_remix03"
+sfx = "GROUP_MANJU"
+
+# Animal Acrobat
+[[game]]
+scene = 0x35
+cellanim = "ctrBlanco_remix03"
+effect = "ctrBlanco"
+sfx = "GROUP_BLANCO"

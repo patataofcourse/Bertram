@@ -1,0 +1,40 @@
+remix = true
+
+name = "Songbird Remix"
+index = 0x65
+keywords = ["songbird remix", "songbird", "endless remix", "remix05"]
+
+[prologue]
+long = "remix05"
+
+[aac]
+long = ["remix_purple_1110", 0x10000D3]
+
+# Tap Trial
+[[game]]
+scene = 0xC
+cellanim = "agbTap_remix05"
+layout = "agbTap"
+effect = "agbTap"
+sfx = "GROUP_AGB_TAP"
+
+# Frog Hop
+[[game]]
+scene = 0x14
+cellanim = "ntrFrog_remix05"
+sfx = "GROUP_NTR_FROG"
+
+# Ringside
+[[game]]
+scene = 0x27
+cellanim = "rvlInterview_remix05"
+sfx = "GROUP_WRESTLER"
+
+# Tangotronic 3000
+[[game]]
+scene = 0x3D
+cellanim = "ctrTango_remix05"
+model = "ctrTango_long"
+effect = "ctrTango"
+other = ["DefaultFragmentLight.bcenv", "DefaultSceneEnvironmentSetting.bcenv"]
+sfx = "GROUP_TANGO"

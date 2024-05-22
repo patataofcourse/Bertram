@@ -1,0 +1,27 @@
+name = "Sneaky Spirits"
+scene = 0x2
+keywords = ["sneaky spirits", "sneaky", "agbGhost"]
+
+sfx = "GROUP_AGB_AIM"
+
+[versions]
+short = "Sneaky Spirits"
+long = "Sneaky Spirits 2"
+remix = ["remix04", "remix07"]
+
+[indexes]
+short = 0x1
+long = 0x11
+
+[prologue]
+short = "agbGhost"
+long = "agbGhost2"
+
+[cellanim]
+short = "agbGhost_short"
+long = "agbGhost_long"
+remix04 = "agbGhost_remix04"
+
+[aac]
+short = ["agb_shiroi_obake_short_final", 0x01000056]
+long = ["agb_shiroi_obake_32k", 0x01000057]

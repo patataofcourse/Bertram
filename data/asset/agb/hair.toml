@@ -1,0 +1,27 @@
+name = "Rhythm Tweezers"
+scene = 0x3
+keywords = ["rhythm tweezers", "tweezers", "vegeta-pull", "agbHair"]
+
+sfx = "GROUP_AGB_HAIR"
+
+[versions]
+short = "Rhythm Tweezers"
+long = "Rhythm Tweezers 2"
+remix = ["remix01", "remix06"]
+
+[indexes]
+short = 0x2
+long = 0x12
+
+[prologue]
+short = "agbHair"
+long = "agbHair2"
+
+[cellanim]
+short = "agbHair_short"
+long = "agbHair_long"
+remix01 = "agbHair_remix01"
+
+[aac]
+short = ["agb_hair_short_final", 0x01000058]
+long = ["agb_hair_original", 0x01000059]

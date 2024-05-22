@@ -1,0 +1,118 @@
+remix = true
+
+name = "Left-Hand Remix"
+index = 0x65
+keywords = ["left-hand remix", "left-hand", "remix06"]
+
+[prologue]
+long = "remix06"
+
+[aac]
+long = ["remix_m_left_t125", 0x10000D4]
+
+# Spaceball
+[[game]]
+scene = 0x0
+cellanim = "agbBatter_long"
+sfx = "GROUP_AGB_BATTER"
+
+# Rhythm Tweezers
+[[game]]
+scene = 0x3
+cellanim = "agbHair_long"
+sfx = "GROUP_AGB_HAIR"
+
+# Space Dance
+[[game]]
+scene = 0xB
+cellanim = "agbSpaceDance_long"
+sfx = "GROUP_AGB_SPACE"
+
+# Tap Trial
+[[game]]
+scene = 0xC
+cellanim = "agbTap_long"
+layout = "agbTap"
+effect = "agbTap"
+sfx = "GROUP_AGB_TAP"
+
+# Freeze Frame
+[[game]]
+scene = 0x12
+cellanim = "ntrCameraMan_long"
+effect = "ntrCameraMan"
+sfx = "GROUP_NTR_CAMERA_MAN"
+
+# Dog Ninja
+[[game]]
+scene = 0x16
+cellanim = "ntrNinja_long"
+layout = "ntrNinja"
+sfx = "GROUP_NTR_NINJA"
+
+# Fillbots
+[[game]]
+scene = 0x18
+cellanim = "ntrRobot_long"
+layout = "ntrRobot_long"
+effect = "ntrRobot"
+sfx = "GROUP_NTR_ROBOT"
+
+# Shoot-'em-up
+[[game]]
+scene = 0x19
+cellanim = "ntrShooting_long"
+effect = "ntrShooting"
+sfx = "GROUP_NTR_SHOOTING"
+
+# Exhibition Match
+[[game]]
+scene = 0x1E
+cellanim = "rvlBatting_remix06"
+effect = "rvlBatting"
+sfx = "GROUP_BATTING"
+
+# Hole in One
+[[game]]
+scene = 0x25
+cellanim = "rvlGolf_long"
+sfx = "GROUP_GOLF"
+
+# Ringside
+[[game]]
+scene = 0x27
+cellanim = "rvlInterview_remix06"
+sfx = "GROUP_WRESTLER"
+
+# Working Dough
+[[game]]
+scene = 0x29
+cellanim = "rvlManju_long"
+sfx = "GROUP_MANJU"
+
+# Blue Bear
+[[game]]
+scene = 0x34
+cellanim = "ctrBear_remix06"
+effect = "ctrBear"
+sfx = "GROUP_BEAR"
+
+# Second Contact
+[[game]]
+scene = 0x39
+cellanim = "ctrInterpreter_long"
+layout = "ctrInterpreter"
+effect = "ctrInterpreter"
+sfx = "GROUP_TSUYAKU"
+
+# Pajama Party
+[[game]]
+scene = 0x3A
+cellanim = "ctrPillow_v0"
+sfx = "GROUP_PAJAMAS"
+
+# Kitties!
+[[game]]
+scene = 0x3E
+cellanim = "ctrTeppan_long"
+sfx = "GROUP_PANPAN"

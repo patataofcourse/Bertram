@@ -1,3 +1,9 @@
+# Tengoku games
+agb/batter.toml
+agb/clap.toml
+agb/ghost.toml
+agb/hair.toml
+
 # RHDS games
 ntr/airboard.toml
 ntr/backbeat.toml
@@ -32,3 +38,8 @@ ntr/cointoss.toml
 remix/LED.toml
 remix/00.toml
 remix/01.toml
+remix/02.toml
+remix/03.toml
+remix/04.toml
+remix/05.toml
+remix/06.toml

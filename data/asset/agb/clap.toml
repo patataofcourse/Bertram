@@ -1,0 +1,41 @@
+name = "The Clappy Trio"
+scene = 0x1
+keywords = ["the clappy trio", "clappy trio", "clappy", "the snappy trio", "snappy", "snappy trio", "trio timing", "agbclap"]
+
+sfx = "GROUP_AGB_PATI"
+
+[versions]
+short = "The Clappy Trio"
+long = "The Clappy Trio 2"
+arrange = "The Snappy Trio"
+remix = ["remix02", "remix07", "remixTED"]
+
+[indexes]
+short = 0x0
+long = 0x10
+arrange = 0x4E
+
+[prologue]
+short = "agbClap"
+long = "agbClap2"
+arrange = "agbClap3"
+
+[cellanim]
+short = "agbClap_short"
+long = "agbClap_long"
+wario = "agbClap_wario"
+arrange = "agbClap_arrange"
+remix02 = "agbClap_remix02"
+remixTED = "agbClap_arrange"
+
+[layout]
+short = "agbClap_short"
+long = "agbClap_long"
+arrange = "agbClap_arrange"
+remix02 = "agbClap_remix"
+remixTED = "agbClap_arrange"
+
+[aac]
+short = ["agb_patipati_short_final", 0x01000053]
+long = ["agb_pachi_pachi_3ninsyu_32k", 0x01000054]
+arrange = ["agb_patipati_ar", 0x01000055]

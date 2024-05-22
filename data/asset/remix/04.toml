@@ -1,0 +1,36 @@
+remix = true
+
+name = "Barbershop Remix"
+index = 0x64
+keywords = ["barbershop remix", "barbershop", "remix04"]
+
+[prologue]
+long = "remix04"
+
+[aac]
+long = ["remix_red_final", 0x10000D2]
+
+# Sneaky Spirits
+[[game]]
+scene = 0x2
+cellanim = "agbGhost_remix04"
+sfx = "GROUP_AGB_AIM"
+
+# Rhythm Rally
+[[game]]
+scene = 0x17
+model = "ntrPingPong_remix04"
+sfx = "GROUP_PINPON"
+
+# Flipper-Flop
+[[game]]
+scene = 0x26
+cellanim = "rvlGoma_remix04"
+sfx = "GROUP_GOMA"
+
+# LumBEARjack
+[[game]]
+scene = 0x3F
+cellanim = "ctrWoodCat_remix04"
+effect = "ctrWoodCat"
+sfx = "GROUP_WOOD_CAT"
