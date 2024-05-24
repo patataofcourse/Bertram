@@ -1,0 +1,19 @@
+name: Test Bertram
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [nightly, nightly-2023-12-31]
+      fail-fast: false
+
+    steps:
+    - uses: hecrj/setup-rust-action@v2
+      with:
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@master
+    - name: Check that it builds tm
+      run: cargo check
+    - name: Check clippy output
+      run: cargo clippy
