@@ -1,0 +1,22 @@
+name = "Bunny Hop"
+scene = 0x8
+keywords = ["bunny hop", "bnnuy", "agbrabbit"]
+
+sfx = "GROUP_AGB_RABBIT"
+effect = "agbRabbit"
+
+[versions]
+long = "Bunny Hop"
+remix = ["remixTED"]
+
+[indexes]
+long = 0x17
+
+[prologue]
+long = "agbRabbit"
+
+[cellanim]
+long = "agbRabbit_v0"
+
+[aac]
+long = ["agb_rabbit_game_final", 0x0100005E]

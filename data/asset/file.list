@@ -3,6 +3,13 @@ agb/batter.toml
 agb/clap.toml
 agb/ghost.toml
 agb/hair.toml
+agb/hopping.toml
+agb/marcher.toml
+agb/nightwalk.toml
+agb/quiz.toml
+agb/rabbit.toml
+agb/rat.toml
+agb/shuji.toml
 
 # RHDS games
 ntr/airboard.toml

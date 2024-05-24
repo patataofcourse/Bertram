@@ -1,6 +1,6 @@
 name = "Sneaky Spirits"
 scene = 0x2
-keywords = ["sneaky spirits", "sneaky", "agbGhost"]
+keywords = ["sneaky spirits", "sneaky", "agbghost"]
 
 sfx = "GROUP_AGB_AIM"
 

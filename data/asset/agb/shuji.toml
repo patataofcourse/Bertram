@@ -1,0 +1,21 @@
+name = "Power Calligraphy"
+scene = 0xA
+keywords = ["power calligraphy", "agbshuji"]
+
+sfx = "GROUP_AGB_SHUJI"
+
+[versions]
+long = "Power Calligraphy"
+remix = ["remix07"]
+
+[indexes]
+long = 0x19
+
+[prologue]
+long = "agbShuji"
+
+[cellanim]
+long = "agbShuji_v0"
+
+[aac]
+long = ["agb_rhythm_oshuji_32k", 0x01000061]

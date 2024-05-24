@@ -1,0 +1,22 @@
+name = "Rat Race"
+scene = 0x9
+keywords = ["rat race", "cheese heist", "agbrat"]
+
+sfx = "GROUP_AGB_RAT"
+
+[versions]
+long = "Rat Race"
+remix = ["remix03", "remixTED"]
+
+[indexes]
+long = 0x18
+
+[prologue]
+long = "agbRat"
+
+[cellanim]
+long = "agbRat_long"
+remix03 = "agbRat_remix03"
+
+[aac]
+long = ["agb_rat_final", 0x01000060]

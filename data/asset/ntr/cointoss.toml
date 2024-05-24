@@ -19,6 +19,7 @@ endless = "ntrCoinToss"
 
 [cellanim]
 endless = "ntrCoinToss_long"
+remixTED = "ntrCoinToss_remixTED"
 
 [layout]
 endless = "gate"

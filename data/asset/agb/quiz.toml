@@ -1,0 +1,18 @@
+name = "Quiz Show"
+scene = 0x7
+keywords = ["quiz show", "quiz", "the one everyone hates for no reason", "agbquiz"]
+
+sfx = "GROUP_AGB_QUIZ"
+effect = "agbQuiz"
+
+[versions]
+long = "Quiz Show"
+
+[indexes]
+long = 0x16
+
+[prologue]
+long = "agbQuiz"
+
+[cellanim]
+long = "agbQuiz_v0"

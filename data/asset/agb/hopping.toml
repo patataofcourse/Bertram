@@ -1,0 +1,20 @@
+name = "Bouncy Road"
+scene = 0x4
+keywords = ["bouncy road", "bouncy", "agbhopping"]
+
+sfx = "GROUP_AGB_HOPPING"
+
+[versions]
+long = "Rhythm Tweezers 2"
+
+[indexes]
+long = 0x13
+
+[prologue]
+long = "agbHopping"
+
+[cellanim]
+long = "agbHopping_v0"
+
+[aac]
+long = ["ntr_hopping_32k", 0x0100005A]

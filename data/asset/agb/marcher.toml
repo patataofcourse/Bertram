@@ -1,0 +1,21 @@
+name = "Marching Orders"
+scene = 0x5
+keywords = ["marching orders", "marcher", "agbmarcher"]
+
+sfx = "GROUP_AGB_MARCHING"
+
+[versions]
+long = "Marching Orders"
+remix = ["remixTED"]
+
+[indexes]
+long = 0x14
+
+[prologue]
+long = "agbMarcher"
+
+[cellanim]
+long = "agbMarcher_v0"
+
+[aac]
+long = ["agb_march_32k", 0x0100005B]

@@ -1,0 +1,20 @@
+name = "Night Walk"
+scene = 0x6
+keywords = ["night walk", "nw", "do the fish", "agbnightwalk"]
+
+sfx = "GROUP_AGB_NIGHT_WALK"
+
+[versions]
+long = "Night Walk"
+
+[indexes]
+long = 0x15
+
+[prologue]
+long = "agbNightWalk"
+
+[cellanim]
+long = "agbNightWalk_v0"
+
+[aac]
+long = ["agb_night_walk_32k", 0x0100005C]
