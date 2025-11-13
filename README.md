@@ -12,9 +12,9 @@ You'll need to add Megamix symbols files in the `sym` folder. An example (exampl
 Symbols for all Saltwater stable versions (aside from 0.1.x) will be included in the repository. For debug builds, please store them under `sym/sw._[COMMIT_HASH].csv` and do not force them to enter the repository. Storing symbols for every single Saltwater debug version would not only be a waste of space, but it would most likely not be very useful.
 
 ## Rust version
-Bertram requires nightly Rust due to `let`-chains and `Iterator::try_collect` not being stable yet. Once those are in stable Rust, I'll look into supporting stable again.
+Bertram requires nightly Rust due to `Iterator::try_collect` not being stable yet. Once it is in stable Rust, I'll look into supporting stable again.
 
-As of the time of writing this readme, the latest working nightly is `nightly-2024-01-07`, although newer nightlies will likely work as well. Regarding older nightlies - no clue.
+As of the time of writing this readme, the latest working nightly is `nightly-2025-08-08`, although newer nightlies will likely work as well. Regarding older nightlies - no clue.
 
 ## Running
 `cargo run` currently builds `bertram-test` by default, which are some offline tests on Bertram's library. To run Bertram as a bot, use `cargo run --bin bertram-bot --features bot` with the environment variable `DISCORD_TOKEN` set to the token of your bot. It's recommended to put this command and the environment variable setting in a sh or bat script. You can use the provided `run.sh.template` as a starting point.
